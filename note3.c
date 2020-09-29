@@ -50,7 +50,6 @@ end: // 여기로 워프
 void loopfunc(void)
 {
     int x = 3;
-
     do
     {
         printf("it is 3");
