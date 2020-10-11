@@ -59,7 +59,7 @@ void loopfunc(void)
 
     for (i = 0; i < 10; i++)
     {
-        printf("&d", i);
+        printf("%d", i);
     }
     /*
     for loop에 대한 여러가지 사실
