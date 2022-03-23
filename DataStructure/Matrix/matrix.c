@@ -63,6 +63,7 @@ typedef SparseMatrixTerm* SparseMatrix;
 
 SparseMatrix Create(int max_rows, int max_cols);
 void Transpose(SparseMatrix original, SparseMatrix transposed);
+void fastTranspose(SparseMatrix original, SparseMatrix transposed);
 void MatrixMultiplication(SparseMatrix m1, SparseMatrix m2, SparseMatrix m3);
 
 void main() {
@@ -163,4 +164,39 @@ void MatrixMultiplication(SparseMatrix m1, SparseMatrix m2, SparseMatrix m3) {
     m3[0].row = rows_m1;
     m3[0].col = cols_m2;
     m3[0].val = totalM3Values;
+}
+
+void fastTranspose(SparseMatrix original, SparseMatrix transposed) {
+    // terms in rows of transposed matrix, starting position of rows of transposed matrix
+    int row_terms[MAX_COLS], starting_pos[MAX_COLS];
+    int i, j, num_cols = original[0].col, num_terms = original[0].val;
+    transposed[0].row = num_cols;
+    transposed[0].col = original[0].row;
+    transposed[0].val = num_terms;
+
+    if (num_terms > 0) {
+        // if non-zero matrix, do the transposing
+        // the first 2 for loops: compute values for row_terms
+        for (i=0; i < num_cols; i++) {
+            // initialize row terms in transposed matrix
+            row_terms[i] = 0;
+        }
+        for (i=1; i <= num_terms; i++) {
+            // compute row terms in transposed matrix for each column in original matrix
+            row_terms[original[i].col]++;
+        }
+        starting_pos[0] = 1;
+        // the third for loop: computation of starting_pos
+        for (i=1; i < num_cols; i++) {
+            // starting point(position) of row i-1 + number of elements in row i-1
+            starting_pos[i] = starting_pos[i-1] + row_terms[i-1];
+        }
+        // last for loop: place the triples into the transposed matrix
+        for (i=1; i <= num_terms; i++) {
+            j = starting_pos[original[i].col]++;
+            transposed[j].row = original[i].col;
+            transposed[j].col = original[i].row;
+            transposed[j].val = original[i].val;
+        }
+    }
 }
