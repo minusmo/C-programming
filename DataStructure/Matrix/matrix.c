@@ -65,6 +65,8 @@ SparseMatrix Create(int max_rows, int max_cols);
 void Transpose(SparseMatrix original, SparseMatrix transposed);
 void fastTranspose(SparseMatrix original, SparseMatrix transposed);
 void MatrixMultiplication(SparseMatrix m1, SparseMatrix m2, SparseMatrix m3);
+void storesum(SparseMatrix d, int *totald, int row, int column, int *sum);
+int COMPARE(int m1Col, int newm2Row);
 
 void main() {
     SparseMatrix sm;
@@ -122,7 +124,7 @@ void MatrixMultiplication(SparseMatrix m1, SparseMatrix m2, SparseMatrix m3) {
         fprintf(stderr, "Incompatible matrices\n");
         exit(1);
     }
-    Transpose(m2, new_m2);
+    fastTranspose(m2, new_m2);
     // set boundary condition
     m1[totalM1Values+1].row = rows_m1;
     new_m2[totalM2Values+1].row = cols_m2;
@@ -198,5 +200,34 @@ void fastTranspose(SparseMatrix original, SparseMatrix transposed) {
             transposed[j].col = original[i].row;
             transposed[j].val = original[i].val;
         }
+    }
+}
+
+void storesum(SparseMatrix d, int *totald, int row, int column, int *sum) {
+    // if *sum != 0, then it along with its row and column
+    // position is stored as the *totald+1 entry in d
+    if (*sum) {
+        if (*totald < MAX_TERMS) {
+            d[++*totald].row = row;
+            d[*totald].col = column;
+            d[*totald].val = *sum;
+            *sum = 0;
+        }
+        else {
+            fprintf(stderr, "Numbers of terms in product exceeds %d\n", MAX_TERMS);
+            exit(1);
+        }
+    }
+}
+
+int COMPARE(int m1Col, int newm2Row) {
+    if (m1Col < newm2Row) {
+        return -1;
+    }
+    else if (m1Col == newm2Row) {
+        return 0;
+    }
+    else {
+        return 1;
     }
 }
