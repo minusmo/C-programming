@@ -30,6 +30,8 @@ Element Delete(Stack stack, int* top);
 
 void main() {
     Element* stack = CreateStack(MAX_STACK_SIZE);
+    free(stack);
+    return;
 }
 
 Stack CreateStack(int max_stack_size) {
