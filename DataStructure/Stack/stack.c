@@ -22,25 +22,26 @@ int top = -1;
 
 typedef Element* Stack;
 typedef int boolean;
-Stack CreateStack(int max_stack_size);
-boolean IsFull(Stack stack, int max_stack_size);
-void Add(Stack stack, int* top, Element item);
-boolean IsEmpty(Stack stack);
-Element Delete(Stack stack, int* top);
+Stack createStack(int max_stack_size);
+boolean isFull(Stack stack, int max_stack_size);
+void add(Stack stack, int* top, Element item);
+boolean isEmpty(Stack stack);
+Element delete(Stack stack, int* top);
+Element stack_empty();
 
 void main() {
-    Element* stack = CreateStack(MAX_STACK_SIZE);
+    Element* stack = createStack(MAX_STACK_SIZE);
     free(stack);
     return;
 }
 
-Stack CreateStack(int max_stack_size) {
+Stack createStack(int max_stack_size) {
     Element* stack;
     stack = (Element*)malloc(max_stack_size * sizeof(Element));
     return stack;
 }
 
-boolean IsFull(Stack stack, int max_stack_size) {
+boolean isFull(Stack stack, int max_stack_size) {
     if (top >= max_stack_size - 1) {
         return 0;
     }
@@ -49,7 +50,7 @@ boolean IsFull(Stack stack, int max_stack_size) {
     }
 }
 
-boolean IsEmpty(Stack stack) {
+boolean isEmpty(Stack stack) {
     if (top < 0) {
         return 0;
     }
@@ -58,7 +59,7 @@ boolean IsEmpty(Stack stack) {
     }
 }
 
-void Add(Stack stack, int* top, Element item) {
+void add(Stack stack, int* top, Element item) {
     if (*top >= MAX_STACK_SIZE) {
         stack_full();
         return;
@@ -68,9 +69,16 @@ void Add(Stack stack, int* top, Element item) {
     }
 }
 
-Element Delete(Stack stack, int* top) {
+Element delete(Stack stack, int* top) {
     if (*top == -1) {
+        // return error code
         return stack_empty();
     }
     return stack[(*top)--];
+}
+
+Element stack_empty() {
+    Element error;
+    error.key = -1;
+    return error;
 }
