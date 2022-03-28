@@ -65,7 +65,7 @@ SparseMatrix Create(int max_rows, int max_cols);
 void Transpose(SparseMatrix original, SparseMatrix transposed);
 void fastTranspose(SparseMatrix original, SparseMatrix transposed);
 void MatrixMultiplication(SparseMatrix m1, SparseMatrix m2, SparseMatrix m3);
-void storesum(SparseMatrix d, int *totald, int row, int column, int *sum);
+void storesum(SparseMatrix d, int *totalM3Values, int row, int column, int *sum);
 int COMPARE(int m1Col, int newm2Row);
 
 void main() {
@@ -118,42 +118,46 @@ void MatrixMultiplication(SparseMatrix m1, SparseMatrix m2, SparseMatrix m3) {
     int rows_m1 = m1[0].row, cols_m1 = m1[0].col;
     int cols_m2 = m2[0].col;
     int row_begin = 1, row = m1[1].row, sum = 0;
-    SparseMatrixTerm new_m2[MAX_TERMS];
+    SparseMatrixTerm transposed_m2[MAX_TERMS];
 
     if (cols_m1 != m2[0].row) {
         fprintf(stderr, "Incompatible matrices\n");
         exit(1);
     }
-    fastTranspose(m2, new_m2);
+    // fastTranspose here is for faster multiplication,
+    // not for make multipliable matrix
+    fastTranspose(m2, transposed_m2);
     // set boundary condition
     m1[totalM1Values+1].row = rows_m1;
-    new_m2[totalM2Values+1].row = cols_m2;
-    new_m2[totalM2Values+1].col = 0;
+    transposed_m2[totalM2Values+1].row = cols_m2;
+    transposed_m2[totalM2Values+1].col = 0;
 
     for (i = 1; i <= totalM1Values;) {
-        column = new_m2[1].row;
+        column = transposed_m2[1].row;
         for (j = 1; j <= totalM2Values+1;) {
             // multiply row of m1 by column of m2
             if (m1[i].row != row) {
+                // reset counters i, j
                 storesum(m3, &totalM3Values, row, column, &sum);
                 i = row_begin;
-                for (; new_m2[j].row == column; j++) {
-                    column = new_m2[j].row;
+                for (; transposed_m2[j].row == column; j++) {
+                    column = transposed_m2[j].row;
                 }
             }
-            else if (new_m2[j].row != column) {
+            else if (transposed_m2[j].row != column) {
                 storesum(m3, &totalM3Values, row, column, &sum);
                 i = row_begin;
-                column = new_m2[j].row;
+                column = transposed_m2[j].row;
             }
-            else switch (COMPARE(m1[i].col, new_m2[j].col)) {
-                case -1://go to next term in m1
+            else switch (COMPARE(m1[i].col, transposed_m2[j].col)) {
+                // when m1[i].row == row and transposed_m2[j].row == column
+                case -1:// go to next term in m1
                     i++;
                     break;
-                case 0://add terms, go to next term in m1 and m2
-                    sum += (m1[i++].val * new_m2[j++].val);
+                case 0:// add terms, go to next term in m1 and m2
+                    sum += (m1[i++].val * transposed_m2[j++].val);
                     break;
-                case 1://advance to next term in b
+                case 1:// advance to next term in transposed_m2
                     j++;
             }
         }// end of for j <= totalM2Value+1
@@ -203,14 +207,14 @@ void fastTranspose(SparseMatrix original, SparseMatrix transposed) {
     }
 }
 
-void storesum(SparseMatrix d, int *totald, int row, int column, int *sum) {
+void storesum(SparseMatrix d, int *totalM3Values, int row, int column, int *sum) {
     // if *sum != 0, then it along with its row and column
-    // position is stored as the *totald+1 entry in d
+    // position is stored as the *totalM3Values+1 entry in d
     if (*sum) {
-        if (*totald < MAX_TERMS) {
-            d[++*totald].row = row;
-            d[*totald].col = column;
-            d[*totald].val = *sum;
+        if (*totalM3Values < MAX_TERMS) {
+            d[++*totalM3Values].row = row;
+            d[*totalM3Values].col = column;
+            d[*totalM3Values].val = *sum;
             *sum = 0;
         }
         else {
