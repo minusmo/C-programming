@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 /*
 스택은 추상 데이터 타입으로, LIFO의 구조를 가진다.
 MAX_STACK_SIZE 를 지정한다.
@@ -22,6 +23,7 @@ int top = -1;
 
 typedef Element* Stack;
 typedef int boolean;
+
 Stack createStack(int max_stack_size);
 boolean isFull(Stack stack, int max_stack_size);
 void add(Stack stack, int* top, Element item);
