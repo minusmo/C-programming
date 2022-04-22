@@ -56,3 +56,35 @@ void delete(list_pointer* ptr, list_pointer trail, list_pointer node) {
     }
     free(node);
 }
+
+void invert(list_node* head) {
+    list_node* curr = head;
+    list_node* prev = NULL;
+    list_node* next = NULL;
+
+    while (curr != NULL)
+    {
+        next = curr->link;
+        curr->link = prev;
+        prev = curr;
+        curr = next;
+    }
+    head = prev;
+}
+
+list_node* concatenate(list_node* list1, list_node* list2) {
+    list_node* temp;
+    if (IS_EMPTY(list1)) {
+        return list2;
+    }
+    else {
+        if (!IS_EMPTY(list2)) {
+            temp = list1;
+            while (temp->link != NULL) {
+                temp = temp->link;
+            }
+            temp->link = list2;
+        }
+        return list1;
+    }
+}
