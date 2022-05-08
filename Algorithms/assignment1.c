@@ -23,11 +23,15 @@ int short_maze[MAX_ROW][MAX_COL] = {
   {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
 };
 
+int maze_path[MAX_ROW][MAX_COL];
+
 void find_path(int maze[MAX_ROW][MAX_COL], Position* START_POINT, Position* END_POINT);
 Position* starting_point(Position* starting, int dir);
-void DFS(int maze[MAX_ROW][MAX_COL], Position* starting);
+void DFS(int maze[MAX_ROW][MAX_COL], Position* starting, Position* ending);
 int promising(int maze[MAX_ROW][MAX_COL], Position* starting, int dir);
 
+// Position START_POINT = { 1, 1 };
+// Position END_POINT = { 11, 15 };
 void main() {
     Position* START_POINT;
     START_POINT->row = 1;
@@ -45,8 +49,9 @@ void find_path(int maze[MAX_ROW][MAX_COL], Position* START_POINT, Position* END_
     Position* starting = START_POINT;
     for (int dir = up; dir <= right; dir++) {
         if (promising(maze, starting, dir)) {
+            maze_path[starting->row][starting->col] = dir;
             Position* starting = starting_point(starting, dir);
-            DFS(maze, starting);
+            DFS(maze, starting, END_POINT);
         }
     }
 }
@@ -70,11 +75,14 @@ Position* starting_point(Position* starting, int dir) {
     return starting;
 }
 
-void DFS(int maze[MAX_ROW][MAX_COL], Position* starting) {
+void DFS(int maze[MAX_ROW][MAX_COL], Position* starting, Position* ending) {
+    if (starting->row == ending->row && starting->col == ending->col) {
+        print_path(maze_path);
+    }
     for (int dir = up; dir <= right; dir++) {
         if (promising(maze, starting, dir)) {
             Position* starting = starting_point(starting, dir);
-            DFS(maze, starting);
+            DFS(maze, starting, ending);
         }
     }
 }
