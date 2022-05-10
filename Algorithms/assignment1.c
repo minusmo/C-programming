@@ -3,9 +3,12 @@
 #define MAX_COL 17
 
 typedef struct {
-    int row;
-    int col;
+    int x;
+    int y;
 } Position;
+
+enum Directions { stay = 30, up, rightUp, right, rightDown, down, leftDown, left, leftUp };
+enum IsVisited { visited = 60, notVisited };
 
 int short_maze[MAX_ROW][MAX_COL] = {
   {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
@@ -23,236 +26,187 @@ int short_maze[MAX_ROW][MAX_COL] = {
   {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
 };
 
-int maze_path[MAX_ROW][MAX_COL] = {0};
+int maze_path[MAX_ROW][MAX_COL];
 
-void finding_path(int maze[MAX_ROW][MAX_COL], Position* START_POINT, Position* END_POINT);
-void updating_starting_point(Position* starting, int direction);
-void DFS(int maze[MAX_ROW][MAX_COL], Position* starting, Position* ending);
-int direction_is_promising(int maze[MAX_ROW][MAX_COL], Position starting, int direction);
-void printing_path(int maze_path[MAX_ROW][MAX_COL], Position* starting, Position* ending);
-const char* move(int direction);
+const Position START_POINT = { 1, 1 };
+const Position END_POINT = { 15, 11 };
+
+void InitializeMazePath();
+void FindPath();
+int IsPromisingDirection(Position position);
+int IsOutBound(Position position);
+int IsBlockedPath(Position postion);
+int IsNotVisited(Position position);
+Position Move(Position position, int direction);
+void DFS(Position position);
+void PrintPath();
+void PrintMove(int direction);
+const char* GetMove(int direction);
 
 int main() {
-    Position START_POINT;
-    START_POINT.row = 1;
-    START_POINT.col = 1;
-
-    Position END_POINT;
-    END_POINT.row = 11;
-    END_POINT.col = 15;
-
-    finding_path(short_maze, &START_POINT, &END_POINT);
+    InitializeMazePath();
+    FindPath();
     return 0;
 }
 
-enum direction{ up, right_up, right, right_down, down, left_down, left, left_up };
-
-void finding_path(int maze[MAX_ROW][MAX_COL], Position* START_POINT, Position* END_POINT) {
-    Position* starting = START_POINT;
-    for (int direction = up; direction <= left_up; direction++) {
-        if (direction_is_promising(maze, *starting, direction)) {
-            maze_path[starting->row][starting->col] = direction;
-            updating_starting_point(starting, direction);
-            DFS(maze, starting, END_POINT);
+void InitializeMazePath() {
+    for (int i = 0; i < MAX_ROW; i++) {
+        for (int j = 0; j < MAX_COL; j++) {
+            maze_path[i][j] = notVisited;
         }
     }
 }
 
-void updating_starting_point(Position* starting, int direction) {
+
+void FindPath() {
+    DFS(START_POINT);
+}
+
+void DFS(Position position) {
+    maze_path[position.y][position.x] = visited;
+    if (position.y == END_POINT.y && position.x == END_POINT.x) {
+        PrintPath();
+    }
+    for (int direction = up; direction <= leftUp; direction++) {
+        Position newPosition = Move(position, direction);
+        if (IsPromisingDirection(newPosition) && IsNotVisited(newPosition)) {
+            maze_path[position.y][position.x] = direction;
+            DFS(newPosition);
+        }
+    }
+}
+
+int IsPromisingDirection(Position position) {
+    if (IsOutBound(position) || IsBlockedPath(position)){
+        return 0;
+    }
+    else {
+        return 1;
+    }
+}
+
+int IsOutBound(Position position) {
+    int x = position.x;
+    int y = position.y;
+    if (x < 0 || x >= MAX_COL || y < 0 || y >= MAX_ROW) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+int IsBlockedPath(Position position) {
+    int x = position.x;
+    int y = position.y;
+    if (short_maze[y][x] == 1) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+int IsNotVisited(Position position) {
+    if (maze_path[position.y][position.x] == notVisited) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+Position Move(Position position, int direction) {
+    Position newPosition = { 0, 0 };
+    newPosition.x = position.x;
+    newPosition.y = position.y;
+
     switch (direction)
     {
     case up:
-        starting->row -= 1;
+        newPosition.y -= 1;
         break;
-    case right_up:
-        starting->row -= 1;
-        starting->col += 1;
+    case rightUp:
+        newPosition.y -= 1;
+        newPosition.x += 1;
         break;
     case right:
-        starting->col += 1;
+        newPosition.x += 1;
         break;
-    case right_down:
-        starting->col += 1;
-        starting->row += 1;
+    case rightDown:
+        newPosition.x += 1;
+        newPosition.y += 1;
         break;
     case down:
-        starting->row += 1;
+        newPosition.y += 1;
         break;
-    case left_down:
-        starting->col -= 1;
-        starting->row += 1;
+    case leftDown:
+        newPosition.x -= 1;
+        newPosition.y += 1;
         break;
     case left:
-        starting->col -= 1;
+        newPosition.x -= 1;
         break;
-    case left_up:
-        starting->col -= 1;
-        starting->row -= 1;
+    case leftUp:
+        newPosition.x -= 1;
+        newPosition.y -= 1;
         break;
     default:
         break;
     }
+    return newPosition;
 }
 
-void DFS(int maze[MAX_ROW][MAX_COL], Position* starting, Position* ending) {
-    if (starting->row == ending->row && starting->col == ending->col) {
-        printing_path(maze_path, starting, ending);
-    }
-    for (int direction = up; direction <= left_up; direction++) {
-        if (direction_is_promising(maze, *starting, direction)) {
-            updating_starting_point(starting, direction);
-            DFS(maze, starting, ending);
-        }
-    }
-}
 
-int direction_is_promising(int maze[MAX_ROW][MAX_COL], Position starting, int direction) {
-    switch (direction)
-    {
-    case up:
-        if (starting.row - 1 < 0) {
-            return 0;
-        }
-        else {
-            int up_row = starting.row - 1;
-            int current_col = starting.col;
-            if (maze[up_row][current_col] == 1) {
-                return 0;
-            }
-        }
-        break;
-    case right_up:
-        if (starting.row - 1 < 0 || starting.col + 1 >= MAX_COL) {
-            return 0;
-        }
-        else {
-            int up_row = starting.row - 1;
-            int right_col = starting.col + 1;
-            if (maze[up_row][right_col] == 1) {
-                return 0;
-            }
-        }
-        break;
-    case right:
-        if (starting.col + 1 >= MAX_COL) {
-            return 0;
-        }
-        else {
-            int cur_row = starting.row;
-            int right_col = starting.col + 1;
-            if (maze[cur_row][right_col] == 1) {
-                return 0;
-            }
-        }
-        break;
-    case right_down:
-        if (starting.row + 1 >= MAX_ROW || starting.col + 1 >= MAX_COL) {
-            return 0;
-        }
-        else {
-            int down_row = starting.row + 1;
-            int right_col = starting.col + 1;
-            if (maze[down_row][right_col] == 1) {
-                return 0;
-            }
-        }
-        break;
-    case down:
-        if (starting.row + 1 >= MAX_ROW) {
-            return 0;
-        }
-        else {
-            int down_row = starting.row + 1;
-            int current_col = starting.col;
-            if (maze[down_row][current_col] == 1) {
-                return 0;
-            }
-        }
-        break;
-    case left_down:
-        if (starting.row + 1 >= MAX_ROW || starting.col - 1 < 0) {
-            return 0;
-        }
-        else {
-            int down_row = starting.row + 1;
-            int left_col = starting.col - 1;
-            if (maze[down_row][left_col] == 1) {
-                return 0;
-            }
-        }
-        break;
-    case left:
-        if (starting.col - 1 < 0) {
-            return 0;
-        }
-        else {
-            int current_row = starting.row ;
-            int left_col = starting.col - 1;
-            if (maze[current_row][left_col] == 1) {
-                return 0;
-            }
-        }
-        break;
-    case left_up:
-        if (starting.row - 1 < 0 || starting.col - 1 < 0) {
-            return 0;
-        }
-        else {
-            int up_row = starting.row - 1;
-            int left_col = starting.col - 1;
-            if (maze[up_row][left_col] == 1) {
-                return 0;
-            }
-        }
-        break;
-    default:
-        break;
-    }
-    return 1;
-}
+void PrintPath() {
+    Position temp = { 0, 0 };
+    temp.x = START_POINT.x;
+    temp.y = START_POINT.y;
 
-void printing_path(int maze_path[MAX_ROW][MAX_COL], Position* starting, Position* ending) {
-    Position* temp;
-    temp->row = starting->row;
-    temp->col = starting->col;
-
-    while (temp->row != ending->row && temp->col != ending->col)
+    while (!(temp.x == END_POINT.x && temp.y == END_POINT.y))
     {   
-        int direction = maze_path[temp->row][temp->col];
-        printf("%s\n", move(direction));
-        updating_starting_point(temp, direction);
+        int direction = maze_path[temp.y][temp.x];
+        PrintMove(direction);
+        temp = Move(temp, direction);
     }
 }
 
-const char* move(int direction) {
-    const char* move_up = "up";
-    const char* move_right_up = "right_up";
-    const char* move_right = "right_up";
-    const char* move_right_down = "right_down";
-    const char* move_down = "down";
-    const char* move_left_down = "left_down";
-    const char* move_left = "left";
-    const char* move_left_up = "left_up";
+
+void PrintMove(int direction) {
+    printf("%s ", GetMove(direction));
+}
+
+const char* GetMove(int direction) {
+    const char* stay = "stay";
+    const char* moveUp = "up";
+    const char* moveRightUp = "rightUp";
+    const char* moveRight = "right";
+    const char* moveRightDown = "rightDown";
+    const char* moveDown = "down";
+    const char* moveLeftDown = "leftDown";
+    const char* moveLeft = "left";
+    const char* moveLeftUp = "leftUp";
 
     switch (direction)
     {
     case up:
-        return move_up;
-    case right_up:
-        return move_right_up;
+        return moveUp;
+    case rightUp:
+        return moveRightUp;
     case right:
-        return move_right;
-    case right_down:
-        return move_right_down;
+        return moveRight;
+    case rightDown:
+        return moveRightDown;
     case down:
-        return move_down;
-    case left_down:
-        return move_left_down;
+        return moveDown;
+    case leftDown:
+        return moveLeftDown;
     case left:
-        return move_left;
-    case left_up:
-        return move_left_up;
+        return moveLeft;
+    case leftUp:
+        return moveLeftUp;
     default:
         break;
     }
+    return stay;
 }
