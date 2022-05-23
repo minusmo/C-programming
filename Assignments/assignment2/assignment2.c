@@ -2,32 +2,122 @@
 #define TRUE 1
 #define FALSE 0
 
-typedef struct
+typedef int boolean;
+struct node
 {
     int data; //node will store an integer
     struct node* right_child; // right child
     struct node* left_child; // left child
-} node;
+};
 
-typedef node** BinarySearchTree;
+boolean isEmpty();
+void makeEmpty();
+void inOrder(struct node* root);
+void preOrder(struct node* root);
+void postOrder(struct node* root);
+boolean contains(int data);
+void put(int data);
+void delete(int data);
 
-BinarySearchTree Create();
-int IsEmpty(BinarySearchTree root);
-BinarySearchTree MakeBST(BinarySearchTree bst1, int item, BinarySearchTree bst2);
-BinarySearchTree Lchild(BinarySearchTree bst);
-BinarySearchTree Rchild(BinarySearchTree bst);
-BinarySearchTree Data(BinarySearchTree bst);
-void InorderTraversal(BinarySearchTree bst);
-void PreorderTraversal(BinarySearchTree bst);
-void PostorderTraversal(BinarySearchTree bst);
-void LevelorderTraversal(BinarySearchTree bst);
+struct node* root = NULL;
 
 int main() {
     return 0;
 }
 
-void InorderTraversal(BinarySearchTree bst) {
-    if (*bst) {
-        
+boolean isEmpty() {
+    if (root == NULL) {
+        return TRUE;
     }
+    else {
+        return FALSE;
+    }
+}
+
+void makeEmpty() {
+    if (isEmpty()) {
+        return;
+    }
+    else {
+        postOrder(root);
+    }
+}
+
+void inOrder(struct node* root) {
+    if (isEmpty()) {
+        return;
+    }
+    else {
+        inOrder(root->left_child);
+        pushQueue(root->data);
+        inOrder(root->right_child);
+    }
+}
+
+void preOrder(struct node* root) {
+    if (isEmpty()) {
+        return;
+    }
+    else {
+        pushQueue(root->data);
+        preOrder(root->left_child);
+        preOrder(root->right_child);
+    }
+}
+
+void postOrder(struct node* root) {
+    if (isEmpty()) {
+        return;
+    }
+    else {
+        postOrder(root->left_child);
+        postOrder(root->right_child);
+        pushQueue(root->data);
+    }
+}
+
+boolean contains(int data) {
+    struct node* temp;
+    if (isEmpty()) {
+        return FALSE;
+    }
+    temp = &root;
+    while (temp)
+    {
+        if (data == temp->data) {
+            return TRUE;
+        }
+        else {
+            if (data < temp->data) {
+                temp = temp->left_child;
+            }
+            else {
+                temp = temp->right_child;
+            }
+        }
+    }
+    return FALSE;
+}
+
+void put(int data) {
+    struct node* temp;
+    if (isEmpty()) {
+        return;
+    }
+    temp = &root;
+    while (temp)
+    {
+        if (data == temp->data) {
+            return;
+        }
+        else {
+            if (data < temp->data) {
+                temp = temp->left_child;
+            }
+            else {
+                temp = temp->right_child;
+            }
+        }
+    }
+    return;
 }
