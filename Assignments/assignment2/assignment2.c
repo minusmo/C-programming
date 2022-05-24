@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #define TRUE 1
 #define FALSE 0
 
@@ -81,7 +82,7 @@ boolean contains(int data) {
     if (isEmpty()) {
         return FALSE;
     }
-    temp = &root;
+    temp = root;
     while (temp)
     {
         if (data == temp->data) {
@@ -104,15 +105,18 @@ void put(int data) {
     if (isEmpty()) {
         return;
     }
-    temp = &root;
+    temp = root;
     while (temp)
     {
         if (data == temp->data) {
             return;
         }
         else {
-            if (data < temp->data) {
-                temp = temp->left_child;
+            if (data < temp->data && data > temp->left_child) {
+                struct node* newNode = (struct node*)malloc(sizeof(struct node));
+                newNode->data = data;
+                newNode->left_child = temp->left_child;
+                temp->left_child = newNode;
             }
             else {
                 temp = temp->right_child;
