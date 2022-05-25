@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "assignment2.h"
 #define TRUE 1
 #define FALSE 0
 
-typedef int boolean;
 struct node
 {
     int data; //node will store an integer
@@ -11,23 +11,25 @@ struct node
     struct node* left_child; // left child
 };
 
-boolean isEmpty();
-void makeEmpty();
-void inOrder(struct node* root);
-void preOrder(struct node* root);
-void postOrder(struct node* root);
-boolean contains(int data);
-void put(int data);
-void delete(int data);
+struct bst {
+    int nodes;
+    struct node** tree;
+};
 
-struct node* root = NULL;
+struct bst bst = { 0, NULL };
+
+struct bstQueue {
+    int front;
+    int rear;
+    int* queue;
+};
 
 int main() {
     return 0;
 }
 
 boolean isEmpty() {
-    if (root == NULL) {
+    if (bst.tree == NULL) {
         return TRUE;
     }
     else {
@@ -40,30 +42,53 @@ void makeEmpty() {
         return;
     }
     else {
-        postOrder(root);
+        postOrderDelete(*(bst.tree));
     }
+}
+
+void postOrderDelete(struct node* root) {
+    if (root == NULL) {
+        return;
+    }
+    postOrderDelete(root->left_child);
+    postOrderDelete(root->right_child);
+    deleteNode(root);
+}
+
+void deleteNode(struct node* root) {
+    free(root);
 }
 
 void inOrder(struct node* root) {
     if (isEmpty()) {
         return;
     }
-    else {
-        inOrder(root->left_child);
-        pushQueue(root->data);
-        inOrder(root->right_child);
+    if (bstQueue == NULL) {
+        createQueue(bst.nodes);
     }
+    inOrder(root->left_child);
+    pushQueue(root->data);
+    inOrder(root->right_child);
+}
+
+void createQueue(int queueSize) {
+    bstQueue = (int*)malloc(sizeof(int) * queueSize);
+}
+
+void pushQueue(int data) {
+
 }
 
 void preOrder(struct node* root) {
     if (isEmpty()) {
         return;
     }
-    else {
-        pushQueue(root->data);
-        preOrder(root->left_child);
-        preOrder(root->right_child);
+    if (bstQueue == NULL) {
+        createQueue(bst.nodes);
     }
+    pushQueue(root->data);
+    preOrder(root->left_child);
+    preOrder(root->right_child);
 }
 
 void postOrder(struct node* root) {
@@ -78,22 +103,22 @@ void postOrder(struct node* root) {
 }
 
 boolean contains(int data) {
-    struct node* temp;
+    struct node* root;
     if (isEmpty()) {
         return FALSE;
     }
-    temp = root;
-    while (temp)
+    root = *(bst.tree);
+    while (root)
     {
-        if (data == temp->data) {
+        if (data == root->data) {
             return TRUE;
         }
         else {
-            if (data < temp->data) {
-                temp = temp->left_child;
+            if (data < root->data) {
+                root = root->left_child;
             }
             else {
-                temp = temp->right_child;
+                root = root->right_child;
             }
         }
     }
@@ -101,25 +126,68 @@ boolean contains(int data) {
 }
 
 void put(int data) {
-    struct node* temp;
+    struct node* root;
     if (isEmpty()) {
         return;
     }
-    temp = root;
-    while (temp)
+    root = *(bst.tree);
+    while (!root == NULL)
     {
-        if (data == temp->data) {
+        if (data == root->data) {
             return;
         }
         else {
-            if (data < temp->data && data > temp->left_child) {
-                struct node* newNode = (struct node*)malloc(sizeof(struct node));
-                newNode->data = data;
-                newNode->left_child = temp->left_child;
-                temp->left_child = newNode;
+            if (data < root->data) {
+                if (root->left_child == NULL) {
+                    struct node* newNode = (struct node*)malloc(sizeof(struct node));
+                    newNode->data = data;
+                    newNode->left_child = NULL;
+                    newNode->right_child = NULL;
+                    root->left_child = newNode;
+                    return;
+                }
+                else {
+                    root = root->left_child;
+                }
             }
             else {
-                temp = temp->right_child;
+                if (root->right_child == NULL) {
+                    struct node* newNode = (struct node*)malloc(sizeof(struct node));
+                    newNode->data = data;
+                    newNode->left_child = NULL;
+                    newNode->right_child = NULL;
+                    root->right_child = newNode;
+                    return;
+                }
+                else {
+                    root = root->right_child;
+                }
+            }
+        }
+    }
+    return;
+}
+
+void delete(int data) {
+    struct node* root;
+    if (isEmpty()) {
+        return;
+    }
+    root = *(bst.tree);
+    while (!root == NULL)
+    {
+        if (data == root->data) {
+            if (root->left_child == NULL && root->right_child == NULL) {
+                
+            }
+            return;
+        }
+        else {
+            if (data < root->data) {
+                root = root->left_child;
+            }
+            else {
+                root = root->right_child;
             }
         }
     }
