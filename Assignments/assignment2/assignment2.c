@@ -24,6 +24,8 @@ struct bstQueue {
     int* queue;
 };
 
+struct bstQueue bstQueue = { -1, -1, NULL };
+
 int main() {
     return 0;
 }
@@ -52,10 +54,10 @@ void postOrderDelete(struct node* root) {
     }
     postOrderDelete(root->left_child);
     postOrderDelete(root->right_child);
-    deleteNode(root);
+    freeNode(root);
 }
 
-void deleteNode(struct node* root) {
+void freeNode(struct node* root) {
     free(root);
 }
 
@@ -63,8 +65,11 @@ void inOrder(struct node* root) {
     if (isEmpty()) {
         return;
     }
-    if (bstQueue == NULL) {
+    if (bstQueue.queue == NULL) {
         createQueue(bst.nodes);
+    }
+    else {
+        resetQueue();
     }
     inOrder(root->left_child);
     pushQueue(root->data);
@@ -72,19 +77,30 @@ void inOrder(struct node* root) {
 }
 
 void createQueue(int queueSize) {
-    bstQueue = (int*)malloc(sizeof(int) * queueSize);
+    bstQueue.queue = (int*)malloc(sizeof(int) * queueSize);
+}
+
+void resetQueue() {
+    bstQueue.front = -1;
+    bstQueue.rear = -1;
+    free(bstQueue.queue);
+    bstQueue.queue = (int*)malloc(bst.nodes * sizeof(int));
 }
 
 void pushQueue(int data) {
-
+    bstQueue.rear += 1;
+    bstQueue.queue[bstQueue.rear] = data;
 }
 
 void preOrder(struct node* root) {
     if (isEmpty()) {
         return;
     }
-    if (bstQueue == NULL) {
+    if (bstQueue.queue == NULL) {
         createQueue(bst.nodes);
+    }
+    else {
+        resetQueue();
     }
     pushQueue(root->data);
     preOrder(root->left_child);
@@ -95,11 +111,15 @@ void postOrder(struct node* root) {
     if (isEmpty()) {
         return;
     }
-    else {
-        postOrder(root->left_child);
-        postOrder(root->right_child);
-        pushQueue(root->data);
+    if (bstQueue.queue == NULL) {
+        createQueue(bst.nodes);
     }
+    else {
+        resetQueue();
+    }
+    postOrder(root->left_child);
+    postOrder(root->right_child);
+    pushQueue(root->data);
 }
 
 boolean contains(int data) {
@@ -136,40 +156,43 @@ void put(int data) {
         if (data == root->data) {
             return;
         }
-        else {
-            if (data < root->data) {
-                if (root->left_child == NULL) {
-                    struct node* newNode = (struct node*)malloc(sizeof(struct node));
-                    newNode->data = data;
-                    newNode->left_child = NULL;
-                    newNode->right_child = NULL;
-                    root->left_child = newNode;
-                    return;
-                }
-                else {
-                    root = root->left_child;
-                }
+        if (data < root->data) {
+            if (root->left_child == NULL) {
+                struct node* newNode = createNode(data);
+                root->left_child = newNode;
+                return;
             }
             else {
-                if (root->right_child == NULL) {
-                    struct node* newNode = (struct node*)malloc(sizeof(struct node));
-                    newNode->data = data;
-                    newNode->left_child = NULL;
-                    newNode->right_child = NULL;
-                    root->right_child = newNode;
-                    return;
-                }
-                else {
-                    root = root->right_child;
-                }
+                root = root->left_child;
+            }
+        }
+        else {
+            if (root->right_child == NULL) {
+                struct node* newNode = createNode(data);
+                root->right_child = newNode;
+                return;
+            }
+            else {
+                root = root->right_child;
             }
         }
     }
     return;
 }
 
+struct node* createNode(int data) {
+    struct node* newNode = (struct node*)malloc(sizeof(struct node));
+    newNode->data = data;
+    newNode->left_child = NULL;
+    newNode->right_child = NULL;
+    return newNode;
+}
+
 void delete(int data) {
+    struct node* parent = NULL;
     struct node* root;
+    boolean isLeftChild = FALSE;
+
     if (isEmpty()) {
         return;
     }
@@ -177,9 +200,7 @@ void delete(int data) {
     while (!root == NULL)
     {
         if (data == root->data) {
-            if (root->left_child == NULL && root->right_child == NULL) {
-                
-            }
+            deleteNode(parent, root, isLeftChild);
             return;
         }
         else {
@@ -192,4 +213,83 @@ void delete(int data) {
         }
     }
     return;
+}
+
+void deleteNode(struct node* parent, struct node* root, boolean isLeftChild) {
+    if (root = *(bst.tree)) {
+        freeNode(root);
+        *(bst.tree) = NULL;
+        return;
+    }
+    if (isLeafNode(root)) {
+        freeNode(root);
+        if (isLeftChild) {
+            parent->left_child = NULL;
+        }
+        else {
+            parent->right_child = NULL;
+        }
+        return;
+    }
+    if (hasOneChild(root)) {
+        if (root->right_child == NULL && isLeftChild) {
+            parent->left_child = root->left_child;
+            freeNode(root);
+            return;
+        }
+        if (root->right_child == NULL && !isLeftChild) {
+            parent->right_child = root->left_child;
+            freeNode(root);
+            return;
+        }
+        if (root->left_child == NULL && isLeftChild) {
+            parent->left_child = root->right_child;
+            freeNode(root);
+            return;
+        }
+        if (root->right_child == NULL && !isLeftChild) {
+            parent->right_child = root->left_child;
+            freeNode(root);
+            return;
+        }
+        
+    }
+    if (hasTwoChildren(root)) {
+        struct node* maxNode = findMaxNode(root->left_child);
+        root->data = maxNode->data;
+
+        return;
+    }
+}
+
+struct node* findMaxNode(struct node* root) {
+    
+}
+
+boolean isLeafNode(struct node* root) {
+    if (root->left_child == NULL && root->right_child == NULL) {
+        return TRUE;
+    }
+    else {
+        return FALSE;
+    }
+}
+
+boolean hasOneChild(struct node* root) {
+    if (isLeafNode(root)) {
+        return FALSE;
+    }
+    if (hasTwoChildren(root)) {
+        return FALSE;
+    }
+    return TRUE;
+}
+
+boolean hasTwoChildren(struct node* root) {
+    if (!root->left_child == NULL && !root->right_child == NULL) {
+        return TRUE;
+    }
+    else {
+        return FALSE;
+    }
 }
