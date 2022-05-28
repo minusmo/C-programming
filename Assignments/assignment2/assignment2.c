@@ -67,6 +67,7 @@ void put(int data) {
     if (isEmpty()) {
         root = createNode(data);
         bst.root = root;
+        bst.nodes += 1;
         return;
     }
     root = bst.root;
@@ -105,19 +106,24 @@ struct node* searchLeafNode(struct node* root, int data) {
     if (root->data > data) {
         return searchLeafNode(root->left_child, data);
     }
-    if (root->data < data) {
+    else {
         return searchLeafNode(root->right_child, data);
     }
-    return NULL;
 }
 
 void addChild(struct node* parent, int data) {
-    if (parent != NULL && parent->data > data) {
-        parent->left_child = createNode(data);
+    struct node* newNode;
+    if (parent == NULL) {
+        return;
     }
-    if (parent != NULL && parent->data < data) {
-        parent->right_child = createNode(data);
+    newNode = createNode(data);
+    if (parent->data > data) {
+        parent->left_child = newNode;
     }
+    else {
+        parent->right_child = newNode;
+    }
+    bst.nodes += 1;
 }
 
 void testContains() {
@@ -258,6 +264,7 @@ void delete(int data) {
     if (root->data == data) {
         free(root);
         bst.root = NULL;
+        bst.nodes -= 1;
         return;
     }
     parent = searchParent(root, data);
@@ -292,11 +299,14 @@ struct node* searchParent(struct node* root, int data) {
 void deleteNode(struct node* parent, int data) {
     struct node* child;
     boolean isLeftChild;
-    if (parent != NULL && data < parent->data) {
+    if (parent == NULL) {
+        return;
+    }
+    if (data < parent->data) {
         child = parent->left_child;
         isLeftChild = TRUE;
     }
-    if (parent != NULL && data > parent->data) {
+    else {
         child = parent->right_child;
         isLeftChild = FALSE;
     }
@@ -311,6 +321,7 @@ void deleteChild(struct node* parent, struct node* child, boolean isLeftChild) {
         else {
             parent->right_child = NULL;
         }
+        bst.nodes -= 1;
         free(child);
         return;
     }
@@ -327,6 +338,7 @@ void deleteChild(struct node* parent, struct node* child, boolean isLeftChild) {
         if (child->left_child == NULL && isLeftChild == FALSE) {
             parent->right_child = child->right_child;
         }
+        bst.nodes -= 1;
         free(child);
         return;
     }
