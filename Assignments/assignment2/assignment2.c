@@ -43,7 +43,7 @@ void test() {
         put(values[i]);
     }
 
-    testContains();
+    testContains(4);
 
     testInOrder();
     testPreOrder();
@@ -126,8 +126,8 @@ void addChild(struct node* parent, int data) {
     bst.nodes += 1;
 }
 
-void testContains() {
-    printf("BST contains 4: %d\n", contains(4));
+void testContains(int data) {
+    printf("BST contains 4: %d\n", contains(data));
 }
 
 boolean contains(int data) {

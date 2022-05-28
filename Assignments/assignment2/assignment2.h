@@ -6,7 +6,7 @@ struct Queue;
 
 void test();
 void testEmpty();
-void testContains();
+void testContains(int data);
 void testInOrder();
 void testPreOrder();
 void testPostOrder();
