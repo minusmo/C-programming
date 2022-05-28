@@ -4,6 +4,11 @@
 #define TRUE 1
 #define FALSE 0
 
+struct Bst {
+    int nodes;
+    struct node* root;
+};
+
 struct node
 {
     int data; //node will store an integer
@@ -11,16 +16,10 @@ struct node
     struct node* left_child; // left child
 };
 
-struct bst {
-    int nodes;
-    struct node** tree;
-};
-
-struct bstQueue {
+struct Queue {
     int size;
-    int front;
-    int rear;
-    int* queue;
+    struct qNode* front;
+    struct qNode* rear;
 };
 
 struct qNode {
@@ -28,39 +27,56 @@ struct qNode {
     struct qNode* next;
 };
 
-struct queue {
-    int size;
-    struct qNode* front;
-    struct qNode* rear;
-};
-
-struct bst bst = { 0, NULL };
-struct bstQueue bstQueue = { 0, -1, -1, NULL };
-struct queue queue = { 0, NULL, NULL };
+struct Bst bst = { 0, NULL };
+struct Queue queue = { 0, NULL, NULL };
 
 int main() {
-    int values[7] = { 6, 7, 2, 1, 4, 3, 5};
-    printf("%d\n", isEmpty());
-    for (int i = 0; i < 7; i++) {
-        put(values[i]);
-    }
-    printf("%d\n", contains(4));
-    inOrder(*(bst.tree));
-    printQueue(queue.front);
-    preOrder(*(bst.tree));
-    printQueue(queue.front);
-    postOrder(*(bst.tree));
-    printQueue(queue.front);
-    delete(2);
-    inOrder(*(bst.tree));
-    printQueue(queue.front);
-    makeEmpty();
-    printf("%d\n", isEmpty());
+    test();
     return 0;
 }
 
+void test() {
+    int values[7] = { 6, 7, 2, 1, 4, 3, 5 };
+
+    testEmpty();
+    for (int i = 0; i < 7; i++) {
+        put(values[i]);
+    }
+
+    testContains();
+
+    testInOrder();
+    testPreOrder();
+    testPostOrder();
+    
+    delete(2);
+
+    testInOrder();
+
+    makeEmpty();
+    testEmpty();
+}
+
+void testEmpty() {
+    printf("BST is empty: %d\n", isEmpty());
+}
+
+void put(int data) {
+    struct node* root;
+    struct node* leafNode;
+    if (isEmpty()) {
+        root = createNode(data);
+        bst.root = root;
+        return;
+    }
+    root = bst.root;
+    leafNode = searchLeafNode(root, data);
+    addChild(leafNode, data);
+    return;
+}
+
 boolean isEmpty() {
-    if (bst.tree == NULL) {
+    if (bst.root == NULL) {
         return TRUE;
     }
     else {
@@ -68,132 +84,44 @@ boolean isEmpty() {
     }
 }
 
-void makeEmpty() {
-    if (isEmpty()) {
-        return;
+struct node* createNode(int data) {
+    struct node* newNode = (struct node*)malloc(sizeof(struct node));
+    newNode->data = data;
+    newNode->left_child = NULL;
+    newNode->right_child = NULL;
+    return newNode;
+}
+
+struct node* searchLeafNode(struct node* root, int data) {
+    if (isEmpty() || root == NULL) {
+        return NULL;
     }
-    else {
-        postOrderDelete(*(bst.tree));
-        bst.nodes = 0;
-        bst.tree = NULL;
+    if (root->data == data) {
+        return NULL;
+    }
+    if (root->left_child == NULL || root->right_child == NULL) {
+        return root;
+    }
+    if (root->data > data) {
+        return searchLeafNode(root->left_child, data);
+    }
+    if (root->data < data) {
+        return searchLeafNode(root->right_child, data);
+    }
+    return NULL;
+}
+
+void addChild(struct node* parent, int data) {
+    if (parent != NULL && parent->data > data) {
+        parent->left_child = createNode(data);
+    }
+    if (parent != NULL && parent->data < data) {
+        parent->right_child = createNode(data);
     }
 }
 
-void postOrderDelete(struct node* root) {
-    if (root == NULL) {
-        return;
-    }
-    postOrderDelete(root->left_child);
-    postOrderDelete(root->right_child);
-    freeNode(root);
-}
-
-void freeNode(struct node* root) {
-    free(root);
-}
-
-void inOrder(struct node* root) {
-    if (isEmpty()) {
-        return;
-    }
-    if (queue.size != 0) {
-        clearQueue();
-    }
-    inOrder(root->left_child);
-    pushQueue(root->data);
-    inOrder(root->right_child);
-}
-
-void createBstQueue(int queueSize) {
-    bstQueue.queue = (int*)malloc(sizeof(int) * queueSize);
-}
-
-void resetBstQueue() {
-    bstQueue.front = -1;
-    bstQueue.rear = -1;
-    free(bstQueue.queue);
-    bstQueue.queue = (int*)malloc(bst.nodes * sizeof(int));
-}
-
-void pushBstQueue(int data) {
-    if (isFullBstQueue()) {
-        printf("queue is full");
-        return;
-    }
-    bstQueue.rear = (bstQueue.rear + 1) ;
-    bstQueue.queue[bstQueue.rear] = data;
-    bstQueue.size += 1;
-}
-
-boolean isFullBstQueue() {
-    if (bstQueue.size == bstQueue.rear + 1) {
-        return TRUE;
-    }
-    else {
-        return FALSE;
-    }
-}
-
-void pushQueue(int data) {
-    struct qNode* newQNode = createQNode(data);
-    newQNode->next = NULL;
-    queue.rear = newQNode;
-    queue.size += 1;
-}
-
-int popQueue() {
-    int data = (queue.front)->data;
-    struct qNode* front = queue.front;
-    queue.front = (queue.front)->next;
-    queue.size -= 1;
-    free(front);
-    return data;
-}
-
-void clearQueue() {
-    struct qNode* temp;
-    if (queue.size == 0) {
-        return;
-    }
-    while (!(queue.front == NULL)) {
-        temp = queue.front;
-        queue.front = (queue.front)->next;
-        free(temp);
-    }
-}
-
-void printQueue(struct qNode* front) {
-    struct qNode* temp;
-    temp = front;
-    while (temp != NULL) {
-        printf("%d", temp->data);
-        temp = temp->next;
-    }
-    printf("\n");
-}
-
-void preOrder(struct node* root) {
-    if (isEmpty()) {
-        return;
-    }
-    if (queue.size != 0) {
-        clearQueue();
-    }
-    pushQueue(root->data);
-    preOrder(root->left_child);
-    preOrder(root->right_child);
-}
-
-void postOrder(struct node* root) {
-    if (isEmpty()) {
-        return;
-    }
-    if (queue.size != 0) {
-        clearQueue();
-    }
-    postOrder(root->left_child);
-    postOrder(root->right_child);
-    pushQueue(root->data);
+void testContains() {
+    printf("BST contains 4: %d\n", contains(4));
 }
 
 boolean contains(int data) {
@@ -202,7 +130,7 @@ boolean contains(int data) {
     if (isEmpty()) {
         return FALSE;
     }
-    root = *(bst.tree);
+    root = bst.root;
     containingNode = search(root, data);
     if (containingNode == NULL) {
         return FALSE;
@@ -227,54 +155,96 @@ struct node* search(struct node* root, int data) {
     }
 }
 
-void put(int data) {
-    struct node* root;
-    struct node* leafNode;
-    if (isEmpty()) {
-        root = createNode(data);
-        bst.tree = &root;
+void testInOrder() {
+    inOrder(bst.root);
+    printQueue(&queue);
+}
+
+void inOrder(struct node* root) {
+    if (isEmpty() || root == NULL) {
         return;
     }
-    root = *(bst.tree);
-    leafNode = searchLeafNode(root, data);
-    addChild(leafNode, data);
-    return;
+    inOrder(root->left_child);
+    pushQueue(&queue, root->data);
+    inOrder(root->right_child);
 }
 
-struct node* searchLeafNode(struct node* root, int data) {
+void pushQueue(struct Queue* queue,  int data) {
+    struct qNode* newQNode = createQNode(data);
+    if (queue->rear == NULL) {
+        queue->front = newQNode;
+    }
+    else {
+        queue->rear->next = newQNode;
+    }
+    queue->rear = newQNode;
+    queue->size += 1;
+}
+
+struct qNode* createQNode(int data) {
+    struct qNode* newQNode = (struct qNode*)malloc(sizeof(struct qNode));
+    newQNode->data = data;
+    newQNode->next = NULL;
+    return newQNode;
+}
+
+void printQueue(struct Queue* queue) {
+    struct qNode* front;
+    if (queue->front == NULL) {
+        return;
+    }
+    else {
+       while (queue->front != NULL) {
+           int data = popQueue(queue);
+           printf("%d", data);
+       }
+    }
+    printf("\n");
+}
+
+int popQueue(struct Queue* queue) {
+    struct qNode* frontQNode;
+    int data;
+    if (queue->front == NULL) {
+        return 0;
+    }
+    frontQNode = queue->front;
+    data = frontQNode->data;
+    queue->front = frontQNode->next;
+    queue->size -= 1;
+    if (queue->front == NULL) {
+        queue->rear = NULL;
+    }
+    free(frontQNode);
+    return data;
+}
+
+void testPreOrder() {
+    preOrder(bst.root);
+    printQueue(&queue);
+}
+
+void preOrder(struct node* root) {
     if (isEmpty() || root == NULL) {
-        return NULL;
+        return;
     }
-    if (root->left_child == NULL || root->right_child == NULL) {
-        return root;
-    }
-    if (root->data > data) {
-        return searchLeafNode(root->left_child, data);
-    }
-    if (root->data < data) {
-        return searchLeafNode(root->right_child, data);
-    }
-    if (root->data == data) {
-        return NULL;
-    }
+    pushQueue(&queue, root->data);
+    preOrder(root->left_child);
+    preOrder(root->right_child);
 }
 
-void addChild(struct node* parent, int data) {
-    if (!parent == NULL && parent->data > data) {
-        parent->left_child = createNode(data);
-    }
-    if (!parent == NULL && parent->data < data) {
-        parent->right_child = createNode(data);
-    }
+void testPostOrder() {
+    postOrder(bst.root);
+    printQueue(&queue);
 }
 
-
-struct node* createNode(int data) {
-    struct node* newNode = (struct node*)malloc(sizeof(struct node));
-    newNode->data = data;
-    newNode->left_child = NULL;
-    newNode->right_child = NULL;
-    return newNode;
+void postOrder(struct node* root) {
+    if (isEmpty() || root == NULL) {
+        return;
+    }
+    postOrder(root->left_child);
+    postOrder(root->right_child);
+    pushQueue(&queue, root->data);
 }
 
 void delete(int data) {
@@ -284,10 +254,10 @@ void delete(int data) {
     if (isEmpty()) {
         return;
     }
-    root = *(bst.tree);
+    root = bst.root;
     if (root->data == data) {
-        freeNode(root);
-        bst.tree = NULL;
+        free(root);
+        bst.root = NULL;
         return;
     }
     parent = searchParent(root, data);
@@ -322,42 +292,42 @@ struct node* searchParent(struct node* root, int data) {
 void deleteNode(struct node* parent, int data) {
     struct node* child;
     boolean isLeftChild;
-    if (!parent == NULL && data < parent->data) {
+    if (parent != NULL && data < parent->data) {
         child = parent->left_child;
         isLeftChild = TRUE;
     }
-    if (!parent == NULL && data > parent->data) {
+    if (parent != NULL && data > parent->data) {
         child = parent->right_child;
         isLeftChild = FALSE;
     }
     deleteChild(parent, child, isLeftChild);
 }
 
-void deleteChild(struct node* parent, struct node* child, int isLeftChild) {
+void deleteChild(struct node* parent, struct node* child, boolean isLeftChild) {
     if (isLeafNode(child)) {
-        freeNode(child);
         if (isLeftChild) {
             parent->left_child = NULL;
         }
         else {
             parent->right_child = NULL;
         }
+        free(child);
         return;
     }
     if (hasAChild(child)) {
         if (child->right_child == NULL && isLeftChild) {
             parent->left_child = child->left_child;
         }
-        if (child->right_child == NULL && !isLeftChild) {
+        if (child->right_child == NULL && isLeftChild == FALSE) {
             parent->right_child = child->left_child;
         }
         if (child->left_child == NULL && isLeftChild) {
             parent->left_child = child->right_child;
         }
-        if (child->right_child == NULL && !isLeftChild) {
-            parent->right_child = child->left_child;
+        if (child->left_child == NULL && isLeftChild == FALSE) {
+            parent->right_child = child->right_child;
         }
-        freeNode(child);
+        free(child);
         return;
     }
     if (hasTwoChildren(child)) {
@@ -379,7 +349,7 @@ void deleteChild(struct node* parent, struct node* child, int isLeftChild) {
 struct node* findMaxNodeParent(struct node* root) {
     struct node* parent;
     struct node* temp = root;
-    while (!temp->right_child == NULL) {
+    while (temp->right_child != NULL) {
         temp = temp->right_child;
     }
     return temp;
@@ -404,10 +374,30 @@ boolean hasAChild(struct node* root) {
 }
 
 boolean hasTwoChildren(struct node* root) {
-    if (!root->left_child == NULL && !root->right_child == NULL) {
+    if (root->left_child != NULL && root->right_child != NULL) {
         return TRUE;
     }
     else {
         return FALSE;
     }
+}
+
+void makeEmpty() {
+    if (isEmpty()) {
+        return;
+    }
+    else {
+        postOrderDelete(bst.root);
+        bst.nodes = 0;
+        bst.root = NULL;
+    }
+}
+
+void postOrderDelete(struct node* root) {
+    if (root == NULL) {
+        return;
+    }
+    postOrderDelete(root->left_child);
+    postOrderDelete(root->right_child);
+    free(root);
 }
