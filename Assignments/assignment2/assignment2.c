@@ -38,7 +38,7 @@ int main() {
 void test() {
     int values[7] = { 6, 7, 2, 1, 4, 3, 5 };
 
-    testEmpty();
+    testIsEmpty();
     for (int i = 0; i < 7; i++) {
         put(values[i]);
     }
@@ -54,10 +54,10 @@ void test() {
     testInOrder();
 
     makeEmpty();
-    testEmpty();
+    testIsEmpty();
 }
 
-void testEmpty() {
+void testIsEmpty() {
     printf("BST is empty: %d\n", isEmpty());
 }
 

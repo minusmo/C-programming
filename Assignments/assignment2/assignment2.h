@@ -5,7 +5,7 @@ struct qNode;
 struct Queue;
 
 void test();
-void testEmpty();
+void testIsEmpty();
 void testContains(int data);
 void testInOrder();
 void testPreOrder();
