@@ -5,19 +5,19 @@
 typedef struct {
     int index;
     int cost;
-    vertex* next;
-} vertex;
+    Vertex* next;
+} Vertex;
 
 typedef struct {
     int source;
     int target;
     int cost;
-} edge;
+} Edge;
 
-struct graph {
+struct Graph {
     int vertices;
-    vertex* graph[16];
-} Graph = { 0, {} };
+    Vertex* graph[16];
+} graph = { 0, { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL } };
 
 int main() {
     int adjacencyMatrix[16][16] = {
@@ -38,6 +38,45 @@ int main() {
         {0,0,0,0,0,0,0,0,0,0,4,0,0,5,0,7},
         {0,0,0,0,0,0,0,0,0,0,0,4,0,0,7,0},
     };
-    createAdjacencyList(adjacencyMatrix);
+    createAdjacencyListfromMatrix(graph, adjacencyMatrix);
     return 0;
+}
+
+void createAdjacencyListfromMatrix(struct Graph graph, const int adjacencyMatrix[16][16]) {
+    for (int i = 0; i < 16; i++) {
+        for (int j = 0; j < 16; j++) {
+            if (adjacencyMatrix[i][j] != 0) {
+                graph.vertices += 1;
+                Vertex* newVertex = createVertex(j, adjacencyMatrix[i][j]);
+                addVertexToList(graph.graph, i, newVertex);
+            }
+        }
+    }
+}
+
+Vertex* createVertex(const int index, const int cost) {
+    Vertex* newVertex = (Vertex*)malloc(sizeof(Vertex));
+    newVertex->index;
+    newVertex->cost = cost;
+    newVertex->next = NULL;
+    return newVertex;
+}
+
+void addVertexToList(Vertex* adjacencyList[16], const int index, Vertex* newVertex) {
+    if (adjacencyList[index] == NULL) {
+        adjacencyList[index] = newVertex;
+    }
+    else {
+        Vertex* lastLinkedVertex = getLastLinkedVertex(adjacencyList[index]);
+        lastLinkedVertex->next = newVertex;
+    }
+}
+
+Vertex* getLastLinkedVertex(Vertex* linkedVertex) {
+    Vertex* temp = linkedVertex;
+    while (temp->next != NULL)
+    {
+        temp = temp->next;
+    }
+    return temp;
 }
