@@ -14,10 +14,20 @@ typedef struct {
     int cost;
 } Edge;
 
+typedef struct {
+    int label;
+    int item;
+} HeapItem;
+
+struct MinHeap {
+    int heapSize;
+    HeapItem heap[121];
+} minHeap = { 0, {NULL} };
+
 struct Graph {
     int vertices;
-    Vertex* graph[16];
-} graph = { 0, { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL } };
+    Vertex* adjacencyList[16];
+} graphComponent = { 0, { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL } };
 
 int main() {
     int adjacencyMatrix[16][16] = {
@@ -38,7 +48,7 @@ int main() {
         {0,0,0,0,0,0,0,0,0,0,4,0,0,5,0,7},
         {0,0,0,0,0,0,0,0,0,0,0,4,0,0,7,0},
     };
-    createAdjacencyListfromMatrix(graph, adjacencyMatrix);
+    createAdjacencyListfromMatrix(graphComponent, adjacencyMatrix);
     return 0;
 }
 
@@ -48,7 +58,7 @@ void createAdjacencyListfromMatrix(struct Graph graph, const int adjacencyMatrix
             if (adjacencyMatrix[i][j] != 0) {
                 graph.vertices += 1;
                 Vertex* newVertex = createVertex(j, adjacencyMatrix[i][j]);
-                addVertexToList(graph.graph, i, newVertex);
+                addVertexToList(graph.adjacencyList, i, newVertex);
             }
         }
     }
@@ -79,4 +89,39 @@ Vertex* getLastLinkedVertex(Vertex* linkedVertex) {
         temp = temp->next;
     }
     return temp;
+}
+
+void clearLinkedList(Vertex* linkedVertex) {
+    Vertex* temp = linkedVertex;
+    if (temp != NULL) {
+        clearLinkedList(temp->next);
+        free(temp);
+    }
+}
+
+void insertItemToMinHeap(struct MinHeap minheap, HeapItem item) {
+    int isHeapified;
+    int index = minheap.heapSize + 1;
+    minHeap.heapSize += 1;
+    minheap.heap[index] = item;
+    for (; index > 0; index/2) {
+        isHeapified = minHeapify(index, minHeap.heap);
+    }
+}
+
+int minHeapify(int index, HeapItem heap[120]) {
+    int rootIndex = index / 2;
+    if (rootIndex < 1) {
+        return 0;
+    }
+    if (index % 2 == 0) {
+        if (heap[rootIndex] > heap[index]) {
+            HeapItem temp = heap[rootIndex];
+            heap[index] = heap[rootIndex];
+            heap[rootIndex] = temp;
+        }
+    }
+    else {
+
+    }
 }
