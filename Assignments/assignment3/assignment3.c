@@ -21,7 +21,7 @@ typedef struct {
 
 struct MinHeap {
     int heapSize;
-    HeapItem heap[121];
+    HeapItem* heap[121];
 } minHeap = { 0, {NULL} };
 
 struct Graph {
@@ -99,29 +99,83 @@ void clearLinkedList(Vertex* linkedVertex) {
     }
 }
 
-void insertItemToMinHeap(struct MinHeap minheap, HeapItem item) {
+void insertItemToMinHeap(struct MinHeap minheap, HeapItem* item) {
     int isHeapified;
     int index = minheap.heapSize + 1;
     minHeap.heapSize += 1;
     minheap.heap[index] = item;
     for (; index > 0; index/2) {
         isHeapified = minHeapify(index, minHeap.heap);
+        if (!isHeapified) {
+            break;
+        }
     }
 }
 
-int minHeapify(int index, HeapItem heap[120]) {
+int minHeapify(int index, HeapItem* heap[121]) {
     int rootIndex = index / 2;
     if (rootIndex < 1) {
         return 0;
     }
-    if (index % 2 == 0) {
-        if (heap[rootIndex] > heap[index]) {
-            HeapItem temp = heap[rootIndex];
-            heap[index] = heap[rootIndex];
-            heap[rootIndex] = temp;
-        }
+    if (heap[rootIndex]->item > heap[index]->item) {
+        HeapItem* temp = heap[rootIndex];
+        heap[rootIndex] = heap[index];
+        heap[index] = temp;
+        return 1;
     }
     else {
+        return 0;
+    }
+    
+}
+
+HeapItem* popHeapItem(struct MinHeap minheap) {
+    int rootIndex, rightChildIndex, leftChildIndex;
+    HeapItem *minItem, *lastItem;
+    if (minheap.heapSize == 0) {
+        return NULL;
+    }
+    rootIndex = 1;
+    minItem = minheap.heap[rootIndex];
+    if (minheap.heapSize == 1) {
+        minheap.heapSize -= 1;
+        minheap.heap[rootIndex] = NULL;
+        return minItem;
+    }
+    minheap.heapSize -= 1;
+    lastItem = minheap.heap[minheap.heapSize];
+    minheap.heap[rootIndex] = lastItem;
+    minheap.heap[minheap.heapSize] = NULL;
+
+    for (; rootIndex < minheap.heapSize; ) {
+        leftChildIndex = rootIndex * 2;
+        rightChildIndex = rootIndex * 2 + 1;
+        if (minheap.heap[rightChildIndex] == NULL && minheap.heap[rootIndex]->item > minheap.heap[leftChildIndex]->item) {
+            HeapItem* temp = minheap.heap[rootIndex];
+            minheap.heap[rootIndex] = minheap.heap[leftChildIndex];
+            minheap.heap[leftChildIndex] = temp;
+            break;
+        }
+        else {
+            int minItemIndex;
+            if (minheap.heap[leftChildIndex]->item < minheap.heap[rightChildIndex]->item) {
+                minItemIndex = leftChildIndex;
+            }
+            else {
+                minItemIndex = rightChildIndex;
+            }
+            if (minheap.heap[rootIndex]->item > minheap.heap[minItemIndex]->item) {
+                HeapItem* temp = minheap.heap[rootIndex];
+                minheap.heap[rootIndex] = minheap.heap[minItemIndex];
+                minheap.heap[minItemIndex] = temp;
+                rootIndex = minItemIndex;
+            }
+            else {
+                break;
+            }
+        }
 
     }
+    
+    return minItem;
 }
