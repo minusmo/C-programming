@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include "assignment3.h";
 
+const int V = 16;
+const int MaxEdges = V * (V-1) + 1;
+
 typedef struct {
     int index;
     int cost;
@@ -10,7 +13,7 @@ typedef struct {
 
 typedef struct {
     int source;
-    int target;
+    int destination;
     int cost;
 } Edge;
 
@@ -21,16 +24,16 @@ typedef struct {
 
 struct MinHeap {
     int heapSize;
-    HeapItem* heap[121];
-} minHeap = { 0, {NULL} };
+    HeapItem* heap[MaxEdges];
+} minHeap = { 0, { NULL } };
 
 struct Graph {
     int vertices;
-    Vertex* adjacencyList[16];
+    Vertex* adjacencyList[V];
 } graphComponent = { 0, { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL } };
 
 int main() {
-    int adjacencyMatrix[16][16] = {
+    int adjacencyMatrix[V][V] = {
         {0,3,0,0,2,0,0,0,0,0,0,0,0,0,0,0},
         {3,0,1,0,0,5,0,0,0,0,0,0,0,0,0,0},
         {0,1,0,4,0,0,1,0,0,0,0,0,0,0,0,0},
@@ -52,13 +55,13 @@ int main() {
     return 0;
 }
 
-void createAdjacencyListfromMatrix(struct Graph graph, const int adjacencyMatrix[16][16]) {
-    for (int i = 0; i < 16; i++) {
-        for (int j = 0; j < 16; j++) {
+void createAdjacencyListfromMatrix(struct Graph undirectedGraph, int adjacencyMatrix[V][V]) {
+    for (int i = 0; i < V; i++) {
+        for (int j = 0; j < V; j++) {
             if (adjacencyMatrix[i][j] != 0) {
-                graph.vertices += 1;
+                undirectedGraph.vertices += 1;
                 Vertex* newVertex = createVertex(j, adjacencyMatrix[i][j]);
-                addVertexToList(graph.adjacencyList, i, newVertex);
+                addVertexToList(undirectedGraph.adjacencyList, i, newVertex);
             }
         }
     }
@@ -72,7 +75,7 @@ Vertex* createVertex(const int index, const int cost) {
     return newVertex;
 }
 
-void addVertexToList(Vertex* adjacencyList[16], const int index, Vertex* newVertex) {
+void addVertexToList(Vertex* adjacencyList[V], const int index, Vertex* newVertex) {
     if (adjacencyList[index] == NULL) {
         adjacencyList[index] = newVertex;
     }
@@ -112,7 +115,7 @@ void insertItemToMinHeap(struct MinHeap minheap, HeapItem* item) {
     }
 }
 
-int minHeapify(int index, HeapItem* heap[121]) {
+int minHeapify(int index, HeapItem* heap[MaxEdges]) {
     int rootIndex = index / 2;
     if (rootIndex < 1) {
         return 0;
@@ -178,4 +181,30 @@ HeapItem* popHeapItem(struct MinHeap minheap) {
     }
     
     return minItem;
+}
+
+void findMSTUsingKruskalMethod(struct Graph graph, struct MinHeap minheap, int adjacencyMatrix[V][V]) {
+    int mstEdgeSet[V];
+    createMSTSet(mstEdgeSet);
+    createDisjointSets();
+    sortEdgeSetAscending();
+    while (isNotMST()) {
+        Edge* minEdge = takeMinimumCostEdge();
+        if (isCycle()) {
+            continue;
+        }
+        else {
+            mergeTwoTrees();
+            addToMSTSet();
+        }
+        if (isMST()) {
+            break;
+        }
+    }
+}
+
+void createMSTSet(int mstEdgeSet[V]) {
+    for (int i = 0; i < V+1; i++) {
+        mstEdgeSet[i] = 0;
+    }
 }
