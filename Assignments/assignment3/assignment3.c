@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include "assignment3.h";
 
-const int V = 16;
-const int MaxEdges = V * (V-1) + 1;
+#define V 16
+const int MaxEdges = (V * (V-1))/2 + 1;
 
 typedef struct {
     int index;
@@ -198,7 +198,7 @@ void findMSTUsingKruskalMethod(struct Graph graph, struct MinHeap minheap, int a
     sortEdgeSetAscending(adjacencyMatrix);
     while (isNotMST(mstNodes)) {
         Edge* minEdge = takeMinimumCostEdge();
-        if (isCycle()) {
+        if (isCycle(disjointSet)) {
             continue;
         }
         else {
@@ -259,3 +259,6 @@ Edge* takeMinimumCostEdge() {
     return newEdge;
 }
 
+int isCycle(VertexNode* disjointSet[V]) {
+    
+}
