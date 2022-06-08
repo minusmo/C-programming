@@ -25,4 +25,6 @@ int findRoot(VertexNode* disjointSet[V], int node);
 void mergeTwoTrees(VertexNode* disjointSet[V], Edge* minEdge);
 void addToMSTSet(int* mstNodes, int mstEdgeSet[V], Edge* minEdge);
 int isMST(int mstNodes);
-void relaxDistances(int vertex, struct Graph graph, int distanceFromSource[V], struct MinHeap minheap);
+void findSSSPUsingDijkstraMethod(struct Graph graph, struct MinHeap minheap, int source);
+void initializeDistances(int distanceFromSource[V], int source);
+void relaxDistances(HeapItem* vertex, struct Graph graph, int distanceFromSource[V], struct MinHeap minheap);

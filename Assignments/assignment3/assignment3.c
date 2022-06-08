@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 #include "assignment3.h";
 
 #define V 16
@@ -317,9 +318,8 @@ int isMST(int mstNodes) {
 
 void findSSSPUsingDijkstraMethod(struct Graph graph, struct MinHeap minheap, int source) {
     int distanceFromSource[V];
-    int isRelaxed;
     HeapItem* sourceItem;
-    initializeDistances(distanceFromSource);
+    initializeDistances(distanceFromSource, source);
     sourceItem = (HeapItem*)malloc(sizeof(HeapItem));
     sourceItem->label1 = 0;
     sourceItem->value = 0;
@@ -327,9 +327,34 @@ void findSSSPUsingDijkstraMethod(struct Graph graph, struct MinHeap minheap, int
     while (minheap.heapSize != 0)
     {
         HeapItem* closestVertex = popHeapItem(priorityQueue);
-        relaxDistances(closestVertex->label1, graph, distanceFromSource, minheap);
+        relaxDistances(closestVertex, graph, distanceFromSource, minheap);
     }
     for (int i = 0; i < V; i++) {
         printf("%d ", distanceFromSource[i]);
+    }
+}
+
+void initializeDistances(int distanceFromSource[V], int source) {
+    for (int i = 0; i < V; i++) {
+        distanceFromSource[i] = INT_MAX;
+    }
+    distanceFromSource[source] = 0;
+}
+
+void relaxDistances(HeapItem* vertex, struct Graph graph, int distanceFromSource[V], struct MinHeap minheap) {
+    Vertex* adjacentVertex = graph.adjacencyList[vertex->label1];
+    while (adjacentVertex != NULL)
+    {   
+        int currentVertex = adjacentVertex->index;
+        int newDistance = vertex->value + adjacentVertex->cost;
+        int currentDistance = distanceFromSource[currentVertex];
+        if (newDistance < currentDistance) {
+            distanceFromSource[currentVertex] = newDistance;
+            HeapItem* newHeapItem = (HeapItem*)malloc(sizeof(HeapItem));
+            newHeapItem->label1 = currentVertex;
+            newHeapItem->value = newDistance;
+            insertItemToMinHeap(minheap, newHeapItem);
+        }
+        adjacentVertex = adjacentVertex->next;
     }
 }
