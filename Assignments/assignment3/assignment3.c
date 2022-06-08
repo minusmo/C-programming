@@ -31,12 +31,15 @@ typedef struct {
 struct MinHeap {
     int heapSize;
     HeapItem* heap[MaxEdges];
-} priorityQueue = { 0, { NULL } };
+};
 
 struct Graph {
     int vertices;
     Vertex* adjacencyList[V];
-} undirectedGraph = { 0, { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL } };
+}; 
+
+struct MinHeap priorityQueue = { 0, { NULL } };
+struct Graph undirectedGraph = { 0, { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL } };
 
 int main() {
     int adjacencyMatrix[V][V] = {
@@ -198,14 +201,14 @@ void findMSTUsingKruskalMethod(struct Graph graph, struct MinHeap minheap, int a
     sortEdgeSetAscending(adjacencyMatrix);
     while (isNotMST(mstNodes)) {
         Edge* minEdge = takeMinimumCostEdge();
-        if (isCycle(disjointSet)) {
+        if (isCycle(disjointSet, minEdge)) {
             continue;
         }
         else {
-            mergeTwoTrees();
-            addToMSTSet();
+            mergeTwoTrees(disjointSet, minEdge);
+            addToMSTSet(&mstNodes, mstEdgeSet, minEdge);
         }
-        if (isMST()) {
+        if (isMST(mstNodes)) {
             break;
         }
     }
@@ -259,6 +262,74 @@ Edge* takeMinimumCostEdge() {
     return newEdge;
 }
 
-int isCycle(VertexNode* disjointSet[V]) {
-    
+int isCycle(VertexNode* disjointSet[V], Edge* minEdge) {
+    int source, destination, cost, root1, root2;
+    source = minEdge->source;
+    destination = minEdge->destination;
+    cost = minEdge->cost;
+    root1 = findRoot(disjointSet, source);
+    root2 = findRoot(disjointSet, destination);
+    if (root1 == root2) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+int findRoot(VertexNode* disjointSet[V], int node) {
+    VertexNode* temp = disjointSet[node];
+    while (temp->parent != NULL) {
+        temp = temp->parent;
+    }
+    return temp->index;
+}
+
+void mergeTwoTrees(VertexNode* disjointSet[V], Edge* minEdge) {
+    int source, destination;
+    source = minEdge->source;
+    destination = minEdge->destination;
+    if (source < destination) {
+        disjointSet[destination]->parent = source;
+    }
+    else {
+        disjointSet[source]->parent = destination;
+    }
+}
+
+void addToMSTSet(int* mstNodes, int mstEdgeSet[V], Edge* minEdge) {
+    int source, destination;
+    source = minEdge->source;
+    destination = minEdge->destination;
+    mstEdgeSet[source] = destination;
+    mstEdgeSet[destination] = source;
+    (*mstNodes)++;
+}
+
+int isMST(int mstNodes) {
+    if (mstNodes == V) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+void findSSSPUsingDijkstraMethod(struct Graph graph, struct MinHeap minheap, int source) {
+    int distanceFromSource[V];
+    int isRelaxed;
+    HeapItem* sourceItem;
+    initializeDistances(distanceFromSource);
+    sourceItem = (HeapItem*)malloc(sizeof(HeapItem));
+    sourceItem->label1 = 0;
+    sourceItem->value = 0;
+    insertItemToMinHeap(minheap, sourceItem);
+    while (minheap.heapSize != 0)
+    {
+        HeapItem* closestVertex = popHeapItem(priorityQueue);
+        relaxDistances(closestVertex->label1, graph, distanceFromSource, minheap);
+    }
+    for (int i = 0; i < V; i++) {
+        printf("%d ", distanceFromSource[i]);
+    }
 }
