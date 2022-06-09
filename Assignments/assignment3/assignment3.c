@@ -1,42 +1,42 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
-#include "assignment3.h";
+#include "assignment3.h"
 
 #define V 16
 const int MaxEdges = (V * (V-1))/2 + 1;
 
-typedef struct {
+struct Vertex {
     int index;
     int cost;
-    Vertex* next;
-} Vertex;
+    struct Vertex* next;
+};
 
-typedef struct {
-    VertexNode* parent;
+struct VertexNode {
+    struct VertexNode* parent;
     int index;
-} VertexNode;
+};
 
-typedef struct {
+struct Edge {
     int source;
     int destination;
     int cost;
-} Edge;
+};
 
-typedef struct {
+struct HeapItem {
     int label1;
     int label2;
     int value;
-} HeapItem;
+};
 
 struct MinHeap {
     int heapSize;
-    HeapItem* heap[MaxEdges];
+    struct HeapItem* heap[MaxEdges];
 };
 
 struct Graph {
     int vertices;
-    Vertex* adjacencyList[V];
+    struct Vertex* adjacencyList[V];
 }; 
 
 struct MinHeap priorityQueue = { 0, { NULL } };
@@ -62,7 +62,44 @@ int main() {
         {0,0,0,0,0,0,0,0,0,0,0,4,0,0,7,0},
     };
     createAdjacencyListfromMatrix(undirectedGraph, adjacencyMatrix);
+    test(adjacencyMatrix);
+    clearAdjacencyList();
     return 0;
+}
+
+void test(int adjacencyMatrix[V][V]) {
+    testAdjacencyList();
+    testKruskalMethod(adjacencyMatrix);
+    testDijkstraMethod(0);
+}
+
+void testAdjacencyList() {
+    for (int i = 0; i < V; i++) {
+        printf("vertex %d is adjacent to ", i);
+        printLinkedList(undirectedGraph.adjacencyList[i]);
+    }
+}
+
+void printLinkedList(struct Vertex* vertex) {
+    struct Vertex* temp = vertex;
+    while (temp != NULL)
+    {
+        printf("%d and it costs %d ", temp->index, temp->cost);
+    }
+}
+
+void testKruskalMethod(int adjacencyMatrix[V][V]) {
+    findMSTUsingKruskalMethod(undirectedGraph, priorityQueue, adjacencyMatrix);
+}
+
+void testDijkstraMethod(int source) {
+    findSSSPUsingDijkstraMethod(undirectedGraph, priorityQueue, source);
+}
+
+void clearAdjacencyList() {
+    for (int i = 0; i < V; i++) {
+        clearLinkedList(undirectedGraph.adjacencyList[i]);
+    }
 }
 
 void createAdjacencyListfromMatrix(struct Graph undirectedGraph, int adjacencyMatrix[V][V]) {
@@ -70,33 +107,33 @@ void createAdjacencyListfromMatrix(struct Graph undirectedGraph, int adjacencyMa
         for (int j = 0; j < V; j++) {
             if (adjacencyMatrix[i][j] != 0) {
                 undirectedGraph.vertices += 1;
-                Vertex* newVertex = createVertex(j, adjacencyMatrix[i][j]);
+                struct Vertex* newVertex = createVertex(j, adjacencyMatrix[i][j]);
                 addVertexToList(undirectedGraph.adjacencyList, i, newVertex);
             }
         }
     }
 }
 
-Vertex* createVertex(const int index, const int cost) {
-    Vertex* newVertex = (Vertex*)malloc(sizeof(Vertex));
-    newVertex->index;
+struct Vertex* createVertex(const int index, const int cost) {
+    struct Vertex* newVertex = (struct Vertex*)malloc(sizeof(struct Vertex));
+    newVertex->index = index;
     newVertex->cost = cost;
     newVertex->next = NULL;
     return newVertex;
 }
 
-void addVertexToList(Vertex* adjacencyList[V], const int index, Vertex* newVertex) {
+void addVertexToList(struct Vertex* adjacencyList[V], const int index, struct Vertex* newVertex) {
     if (adjacencyList[index] == NULL) {
         adjacencyList[index] = newVertex;
     }
     else {
-        Vertex* lastLinkedVertex = getLastLinkedVertex(adjacencyList[index]);
+        struct Vertex* lastLinkedVertex = getLastLinkedVertex(adjacencyList[index]);
         lastLinkedVertex->next = newVertex;
     }
 }
 
-Vertex* getLastLinkedVertex(Vertex* linkedVertex) {
-    Vertex* temp = linkedVertex;
+struct Vertex* getLastLinkedVertex(struct Vertex* linkedVertex) {
+    struct Vertex* temp = linkedVertex;
     while (temp->next != NULL)
     {
         temp = temp->next;
@@ -104,20 +141,20 @@ Vertex* getLastLinkedVertex(Vertex* linkedVertex) {
     return temp;
 }
 
-void clearLinkedList(Vertex* linkedVertex) {
-    Vertex* temp = linkedVertex;
+void clearLinkedList(struct Vertex* linkedVertex) {
+    struct Vertex* temp = linkedVertex;
     if (temp != NULL) {
         clearLinkedList(temp->next);
         free(temp);
     }
 }
 
-void insertItemToMinHeap(struct MinHeap minheap, HeapItem* value) {
+void insertItemToMinHeap(struct MinHeap minheap, struct HeapItem* value) {
     int isHeapified;
     int index = minheap.heapSize + 1;
     priorityQueue.heapSize += 1;
     minheap.heap[index] = value;
-    for (; index > 0; index/2) {
+    for (; index > 0; index = index/2) {
         isHeapified = minHeapify(index, priorityQueue.heap);
         if (!isHeapified) {
             break;
@@ -125,13 +162,13 @@ void insertItemToMinHeap(struct MinHeap minheap, HeapItem* value) {
     }
 }
 
-int minHeapify(int index, HeapItem* heap[MaxEdges]) {
+int minHeapify(int index, struct HeapItem* heap[MaxEdges]) {
     int rootIndex = index / 2;
     if (rootIndex < 1) {
         return 0;
     }
     if (heap[rootIndex]->value > heap[index]->value) {
-        HeapItem* temp = heap[rootIndex];
+        struct HeapItem* temp = heap[rootIndex];
         heap[rootIndex] = heap[index];
         heap[index] = temp;
         return 1;
@@ -142,9 +179,9 @@ int minHeapify(int index, HeapItem* heap[MaxEdges]) {
     
 }
 
-HeapItem* popHeapItem(struct MinHeap minheap) {
+struct HeapItem* popHeapItem(struct MinHeap minheap) {
     int rootIndex, rightChildIndex, leftChildIndex;
-    HeapItem *minItem, *lastItem;
+    struct HeapItem *minItem, *lastItem;
     if (minheap.heapSize == 0) {
         return NULL;
     }
@@ -164,7 +201,7 @@ HeapItem* popHeapItem(struct MinHeap minheap) {
         leftChildIndex = rootIndex * 2;
         rightChildIndex = rootIndex * 2 + 1;
         if (minheap.heap[rightChildIndex] == NULL && minheap.heap[rootIndex]->value > minheap.heap[leftChildIndex]->value) {
-            HeapItem* temp = minheap.heap[rootIndex];
+           struct HeapItem* temp = minheap.heap[rootIndex];
             minheap.heap[rootIndex] = minheap.heap[leftChildIndex];
             minheap.heap[leftChildIndex] = temp;
             break;
@@ -178,7 +215,7 @@ HeapItem* popHeapItem(struct MinHeap minheap) {
                 minItemIndex = rightChildIndex;
             }
             if (minheap.heap[rootIndex]->value > minheap.heap[minItemIndex]->value) {
-                HeapItem* temp = minheap.heap[rootIndex];
+                struct HeapItem* temp = minheap.heap[rootIndex];
                 minheap.heap[rootIndex] = minheap.heap[minItemIndex];
                 minheap.heap[minItemIndex] = temp;
                 rootIndex = minItemIndex;
@@ -196,13 +233,13 @@ HeapItem* popHeapItem(struct MinHeap minheap) {
 void findMSTUsingKruskalMethod(struct Graph graph, struct MinHeap minheap, int adjacencyMatrix[V][V]) {
     int mstEdgeSet[V][V];
     int mstNodes = 0;
-    VertexNode* disjointSet[V];
+    struct VertexNode* disjointSet[V];
     createMSTSet(mstEdgeSet);
     initializeMinHeap(minheap);
     createDisjointSets(disjointSet);
     sortEdgeSetAscending(adjacencyMatrix);
     while (!isMST(mstNodes)) {
-        Edge* minEdge = takeMinimumCostEdge();
+        struct Edge* minEdge = takeMinimumCostEdge();
         if (isCycle(disjointSet, minEdge)) {
             continue;
         }
@@ -210,11 +247,8 @@ void findMSTUsingKruskalMethod(struct Graph graph, struct MinHeap minheap, int a
             mergeTwoTrees(disjointSet, minEdge);
             addToMSTSet(&mstNodes, mstEdgeSet, minEdge);
         }
-        if (isMST(mstNodes)) {
-            break;
-        }
     }
-    printMST();
+    printMST(mstEdgeSet);
 }
 
 void createMSTSet(int mstEdgeSet[V][V]) {
@@ -225,9 +259,9 @@ void createMSTSet(int mstEdgeSet[V][V]) {
     }
 }
 
-void createDisjointSets(VertexNode* disjointSets[V]) {
+void createDisjointSets(struct VertexNode* disjointSets[V]) {
     for (int i = 0; i < V+1; i++) {
-        VertexNode* disjointSet = (VertexNode*)malloc(sizeof(VertexNode));
+        struct VertexNode* disjointSet = (struct VertexNode*)malloc(sizeof(struct VertexNode));
         disjointSet->index = i;
         disjointSet->parent = NULL;
         disjointSets[i] = disjointSet;
@@ -238,7 +272,7 @@ void sortEdgeSetAscending(int adjacencyMatrix[V][V]) {
     for (int i = 0; i < V; i++) {
         for (int j = 0; j < V; j++) {
             if (adjacencyMatrix[i][j] != 0) {
-                HeapItem* heapitem = (HeapItem*)malloc(sizeof(HeapItem));
+                struct HeapItem* heapitem = (struct HeapItem*)malloc(sizeof(struct HeapItem));
                 heapitem->label1 = i;
                 heapitem->label2 = j;
                 heapitem->value = adjacencyMatrix[i][j];
@@ -248,9 +282,18 @@ void sortEdgeSetAscending(int adjacencyMatrix[V][V]) {
     }
 }
 
-Edge* takeMinimumCostEdge() {
-    HeapItem* minHeapItem = popHeapItem(priorityQueue);
-    Edge* newEdge = (Edge*)malloc(sizeof(Edge));
+int isMST(int mstNodes) {
+    if (mstNodes == V) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+struct Edge* takeMinimumCostEdge() {
+    struct HeapItem* minHeapItem = popHeapItem(priorityQueue);
+    struct Edge* newEdge = (struct Edge*)malloc(sizeof(struct Edge));
     newEdge->source = minHeapItem->label1;
     newEdge->destination = minHeapItem->label2;
     newEdge->cost = minHeapItem->value;
@@ -258,7 +301,7 @@ Edge* takeMinimumCostEdge() {
     return newEdge;
 }
 
-int isCycle(VertexNode* disjointSet[V], Edge* minEdge) {
+int isCycle(struct VertexNode* disjointSet[V], struct Edge* minEdge) {
     int source, destination, cost, root1, root2;
     source = minEdge->source;
     destination = minEdge->destination;
@@ -273,15 +316,15 @@ int isCycle(VertexNode* disjointSet[V], Edge* minEdge) {
     }
 }
 
-int findRoot(VertexNode* disjointSet[V], int node) {
-    VertexNode* temp = disjointSet[node];
+int findRoot(struct VertexNode* disjointSet[V], int node) {
+    struct VertexNode* temp = disjointSet[node];
     while (temp->parent != NULL) {
         temp = temp->parent;
     }
     return temp->index;
 }
 
-void mergeTwoTrees(VertexNode* disjointSet[V], Edge* minEdge) {
+void mergeTwoTrees(struct VertexNode* disjointSet[V], struct Edge* minEdge) {
     int source, destination;
     source = minEdge->source;
     destination = minEdge->destination;
@@ -293,7 +336,7 @@ void mergeTwoTrees(VertexNode* disjointSet[V], Edge* minEdge) {
     }
 }
 
-void addToMSTSet(int* mstNodes, int mstEdgeSet[V][V], Edge* minEdge) {
+void addToMSTSet(int* mstNodes, int mstEdgeSet[V][V], struct Edge* minEdge) {
     int source, destination;
     source = minEdge->source;
     destination = minEdge->destination;
@@ -302,30 +345,31 @@ void addToMSTSet(int* mstNodes, int mstEdgeSet[V][V], Edge* minEdge) {
     (*mstNodes)++;
 }
 
-int isMST(int mstNodes) {
-    if (mstNodes == V) {
-        return 1;
-    }
-    else {
-        return 0;
+void printMST(int mstEdgeSet[V][V]) {
+    for (int i = 0; i < V; i++) {
+        for (int j = 0; j < V; j++) {
+            if (mstEdgeSet[i][j] != 0) {
+                printf("edge from %d to %d has cost of %d\n", i, j, mstEdgeSet[i][j]);
+            }
+        }
     }
 }
 
 void findSSSPUsingDijkstraMethod(struct Graph graph, struct MinHeap minheap, int source) {
     int distanceFromSource[V];
-    HeapItem* sourceItem;
+    struct HeapItem* sourceItem;
     initializeMinHeap(minheap);
     initializeDistances(distanceFromSource, source);
-    sourceItem = (HeapItem*)malloc(sizeof(HeapItem));
+    sourceItem = (struct HeapItem*)malloc(sizeof(struct HeapItem));
     sourceItem->label1 = 0;
     sourceItem->value = 0;
     insertItemToMinHeap(minheap, sourceItem);
     while (minheap.heapSize != 0)
     {
-        HeapItem* closestVertex = popHeapItem(priorityQueue);
+        struct HeapItem* closestVertex = popHeapItem(priorityQueue);
         relaxDistances(closestVertex, graph, distanceFromSource, minheap);
     }
-    printSSSP(distanceFromSource);
+    printSSSP(distanceFromSource, source);
 }
 
 void initializeMinHeap(struct MinHeap minheap) {
@@ -342,8 +386,8 @@ void initializeDistances(int distanceFromSource[V], int source) {
     distanceFromSource[source] = 0;
 }
 
-void relaxDistances(HeapItem* vertex, struct Graph graph, int distanceFromSource[V], struct MinHeap minheap) {
-    Vertex* adjacentVertex = graph.adjacencyList[vertex->label1];
+void relaxDistances(struct HeapItem* vertex, struct Graph graph, int distanceFromSource[V], struct MinHeap minheap) {
+    struct Vertex* adjacentVertex = graph.adjacencyList[vertex->label1];
     while (adjacentVertex != NULL)
     {   
         int currentVertex = adjacentVertex->index;
@@ -351,7 +395,7 @@ void relaxDistances(HeapItem* vertex, struct Graph graph, int distanceFromSource
         int currentDistance = distanceFromSource[currentVertex];
         if (newDistance < currentDistance) {
             distanceFromSource[currentVertex] = newDistance;
-            HeapItem* newHeapItem = (HeapItem*)malloc(sizeof(HeapItem));
+            struct HeapItem* newHeapItem = (struct HeapItem*)malloc(sizeof(struct HeapItem));
             newHeapItem->label1 = currentVertex;
             newHeapItem->value = newDistance;
             insertItemToMinHeap(minheap, newHeapItem);
@@ -360,8 +404,8 @@ void relaxDistances(HeapItem* vertex, struct Graph graph, int distanceFromSource
     }
 }
 
-void printSSSP(int distanceFromSource[V]) {
+void printSSSP(int distanceFromSource[V], int source) {
     for (int i = 0; i < V; i++) {
-        printf("%d ", distanceFromSource[i]);
+        printf("shortest path distance from %d is %d\n", source,  distanceFromSource[i]);
     }
 }

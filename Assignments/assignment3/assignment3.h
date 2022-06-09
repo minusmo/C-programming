@@ -1,34 +1,42 @@
 #define V 16
 struct Graph;
 struct MinHeap;
-typedef struct Vertex;
-typedef struct VertexNode;
-typedef struct Edge;
-typedef struct HeapItem;
+struct Vertex;
+struct VertexNode;
+struct Edge;
+struct HeapItem;
+
+void test(int adjacencyMatrix[V][V]);
+void testAdjacencyList();
+void testKruskalMethod(int adjacencyMatrix[V][V]);
+void testDijkstraMethod(int source);
+void printLinkedList(struct Vertex* vertex);
+void clearAdjacencyList();
 
 void createAdjacencyListfromMatrix(struct Graph undirectedGraph, int adjacencyMatrix[V][V]);
-Vertex* createVertex(const int index, const int cost);
-void addVertexToList(Vertex* adjacencyList[V], const int index, Vertex* newVertex);
-Vertex* getLastLinkedVertex(Vertex* linkedVertex);
-void clearLinkedList(Vertex* linkedVertex);
+struct Vertex* createVertex(const int index, const int cost);
+void addVertexToList(struct Vertex* adjacencyList[V], const int index, struct Vertex* newVertex);
+struct Vertex* getLastLinkedVertex(struct Vertex* linkedVertex);
+void clearLinkedList(struct Vertex* linkedVertex);
 
-void insertItemToMinHeap(struct MinHeap minheap, HeapItem item);
-int minHeapify(int index, HeapItem* heap[121]);
-HeapItem* popHeapItem(struct MinHeap minheap);
+void insertItemToMinHeap(struct MinHeap minheap, struct HeapItem* item);
+int minHeapify(int index, struct HeapItem* heap[121]);
+struct HeapItem* popHeapItem(struct MinHeap minheap);
 void initializeMinHeap(struct MinHeap minheap);
 
 void findMSTUsingKruskalMethod(struct Graph graph, struct MinHeap minheap, int adjacencyMatrix[V][V]);
 void createMSTSet(int mstEdgeSet[V][V]);
-void createDisjointSets(VertexNode* disjointSets[V]);
+void createDisjointSets(struct VertexNode* disjointSets[V]);
 void sortEdgeSetAscending(int adjacencyMatrix[V][V]);
 int isMST(int mstNodes);
-Edge* takeMinimumCostEdge();
-int isCycle(VertexNode* disjointSet[V], Edge* minEdge);
-int findRoot(VertexNode* disjointSet[V], int node);
-void mergeTwoTrees(VertexNode* disjointSet[V], Edge* minEdge);
-void addToMSTSet(int* mstNodes, int mstEdgeSet[V][V], Edge* minEdge);
+struct Edge* takeMinimumCostEdge();
+int isCycle(struct VertexNode* disjointSet[V], struct Edge* minEdge);
+int findRoot(struct VertexNode* disjointSet[V], int node);
+void mergeTwoTrees(struct VertexNode* disjointSet[V], struct Edge* minEdge);
+void addToMSTSet(int* mstNodes, int mstEdgeSet[V][V], struct Edge* minEdge);
+void printMST(int mstEdgeSet[V][V]);
 
 void findSSSPUsingDijkstraMethod(struct Graph graph, struct MinHeap minheap, int source);
 void initializeDistances(int distanceFromSource[V], int source);
-void relaxDistances(HeapItem* vertex, struct Graph graph, int distanceFromSource[V], struct MinHeap minheap);
-void printSSSP(int distanceFromSource[V]);
+void relaxDistances(struct HeapItem* vertex, struct Graph graph, int distanceFromSource[V], struct MinHeap minheap);
+void printSSSP(int distanceFromSource[V], int source);
