@@ -194,13 +194,14 @@ HeapItem* popHeapItem(struct MinHeap minheap) {
 }
 
 void findMSTUsingKruskalMethod(struct Graph graph, struct MinHeap minheap, int adjacencyMatrix[V][V]) {
-    int mstEdgeSet[V];
+    int mstEdgeSet[V][V];
     int mstNodes = 0;
     VertexNode* disjointSet[V];
     createMSTSet(mstEdgeSet);
+    initializeMinHeap(minheap);
     createDisjointSets(disjointSet);
     sortEdgeSetAscending(adjacencyMatrix);
-    while (isNotMST(mstNodes)) {
+    while (!isMST(mstNodes)) {
         Edge* minEdge = takeMinimumCostEdge();
         if (isCycle(disjointSet, minEdge)) {
             continue;
@@ -213,11 +214,14 @@ void findMSTUsingKruskalMethod(struct Graph graph, struct MinHeap minheap, int a
             break;
         }
     }
+    printMST();
 }
 
-void createMSTSet(int mstEdgeSet[V]) {
-    for (int i = 0; i < V+1; i++) {
-        mstEdgeSet[i] = 0;
+void createMSTSet(int mstEdgeSet[V][V]) {
+    for (int i = 0; i < V; i++) {
+        for (int j = 0; j < V; j++) {
+            mstEdgeSet[i][j] = 0;
+        }
     }
 }
 
@@ -241,15 +245,6 @@ void sortEdgeSetAscending(int adjacencyMatrix[V][V]) {
                 insertItemToMinHeap(priorityQueue, heapitem);
             }
         }
-    }
-}
-
-int isNotMST(int mstNodes) {
-    if (mstNodes == 16) {
-        return 0;
-    }
-    else {
-        return 1;
     }
 }
 
@@ -298,12 +293,12 @@ void mergeTwoTrees(VertexNode* disjointSet[V], Edge* minEdge) {
     }
 }
 
-void addToMSTSet(int* mstNodes, int mstEdgeSet[V], Edge* minEdge) {
+void addToMSTSet(int* mstNodes, int mstEdgeSet[V][V], Edge* minEdge) {
     int source, destination;
     source = minEdge->source;
     destination = minEdge->destination;
-    mstEdgeSet[source] = destination;
-    mstEdgeSet[destination] = source;
+    mstEdgeSet[source][destination] = minEdge->cost;
+    mstEdgeSet[destination][source] = minEdge->cost;
     (*mstNodes)++;
 }
 
@@ -319,6 +314,7 @@ int isMST(int mstNodes) {
 void findSSSPUsingDijkstraMethod(struct Graph graph, struct MinHeap minheap, int source) {
     int distanceFromSource[V];
     HeapItem* sourceItem;
+    initializeMinHeap(minheap);
     initializeDistances(distanceFromSource, source);
     sourceItem = (HeapItem*)malloc(sizeof(HeapItem));
     sourceItem->label1 = 0;
@@ -329,8 +325,13 @@ void findSSSPUsingDijkstraMethod(struct Graph graph, struct MinHeap minheap, int
         HeapItem* closestVertex = popHeapItem(priorityQueue);
         relaxDistances(closestVertex, graph, distanceFromSource, minheap);
     }
-    for (int i = 0; i < V; i++) {
-        printf("%d ", distanceFromSource[i]);
+    printSSSP(distanceFromSource);
+}
+
+void initializeMinHeap(struct MinHeap minheap) {
+    while (minheap.heapSize != 0)
+    {
+        popHeapItem(minheap);
     }
 }
 
@@ -356,5 +357,11 @@ void relaxDistances(HeapItem* vertex, struct Graph graph, int distanceFromSource
             insertItemToMinHeap(minheap, newHeapItem);
         }
         adjacentVertex = adjacentVertex->next;
+    }
+}
+
+void printSSSP(int distanceFromSource[V]) {
+    for (int i = 0; i < V; i++) {
+        printf("%d ", distanceFromSource[i]);
     }
 }
