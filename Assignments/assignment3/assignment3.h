@@ -1,4 +1,6 @@
-#define V 16
+#define V 16 // number of vertices
+#define MAX_EDGES 121 // maximum edges of undirected graph((V * (V-1))/2) + 1(for convenience for using heap index)
+
 struct Graph;
 struct MinHeap;
 struct Vertex;
@@ -20,7 +22,7 @@ struct Vertex* getLastLinkedVertex(struct Vertex* linkedVertex);
 void clearLinkedList(struct Vertex* linkedVertex);
 
 void insertItemToMinHeap(struct MinHeap* minheap, struct HeapItem* item);
-int minHeapify(int index, struct HeapItem* heap[121]);
+int minHeapify(int index, struct HeapItem* heap[MAX_EDGES]);
 struct HeapItem* popHeapItem(struct MinHeap* minheap);
 void initializeMinHeap(struct MinHeap* minheap);
 
