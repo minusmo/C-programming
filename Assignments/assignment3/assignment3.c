@@ -10,8 +10,8 @@ struct Vertex {
 };
 
 struct VertexNode {
-    struct VertexNode* parent;
     int index;
+    struct VertexNode* parent;
 };
 
 struct Edge {
@@ -67,7 +67,7 @@ int main() {
 void test(int adjacencyMatrix[V][V]) {
     testAdjacencyList();
     testKruskalMethod(adjacencyMatrix);
-    testDijkstraMethod(0);
+    testSSSP(0);
 }
 
 void testAdjacencyList() {
@@ -91,7 +91,7 @@ void testKruskalMethod(int adjacencyMatrix[V][V]) {
     findMSTUsingKruskalMethod(undirectedGraph, &priorityQueue, adjacencyMatrix);
 }
 
-void testDijkstraMethod(int source) {
+void testSSSP(int source) {
     findSSSPUsingDijkstraMethod(undirectedGraph, &priorityQueue, source);
 }
 
@@ -166,6 +166,7 @@ void findMSTUsingKruskalMethod(struct Graph graph, struct MinHeap* minheap, int 
             addToMSTSet(&mstEdges, mstEdgeSet, minEdge);
         }
     }
+    clearDisjointSet(disjointSet);
     printMST(mstEdgeSet);
 }
 
@@ -354,6 +355,12 @@ void addToMSTSet(int* mstEdges, int mstEdgeSet[V][V], struct Edge* minEdge) {
     (*mstEdges)++;
 }
 
+void clearDisjointSet(struct VertexNode* disjointSet[V]) {
+    for (int i = 0; i < V; i++) {
+        free(disjointSet[i]);
+    }
+}
+
 void printMST(int mstEdgeSet[V][V]) {
     printf("Minimum Spanning Tree using Kruskal's method consists of following edges.\n");
     for (int i = 0; i < V; i++) {
@@ -367,6 +374,8 @@ void printMST(int mstEdgeSet[V][V]) {
 
 void findSSSPUsingDijkstraMethod(struct Graph graph, struct MinHeap* minheap, int source) {
     int distanceFromSource[V];
+    int paths[V];
+    paths[source] = source;
     struct HeapItem* sourceItem;
     initializeMinHeap(minheap);
     initializeDistances(distanceFromSource, source);
@@ -377,9 +386,9 @@ void findSSSPUsingDijkstraMethod(struct Graph graph, struct MinHeap* minheap, in
     while (minheap->heapSize != 0)
     {
         struct HeapItem* closestVertex = popHeapItem(&priorityQueue);
-        relaxDistances(closestVertex, graph, distanceFromSource, minheap);
+        relaxDistances(closestVertex, graph, distanceFromSource, minheap, paths);
     }
-    printSSSP(distanceFromSource, source);
+    printSSSP(distanceFromSource, source, paths);
 }
 
 void initializeMinHeap(struct MinHeap* minheap) {
@@ -396,7 +405,7 @@ void initializeDistances(int distanceFromSource[V], int source) {
     distanceFromSource[source] = 0;
 }
 
-void relaxDistances(struct HeapItem* vertex, struct Graph graph, int distanceFromSource[V], struct MinHeap* minheap) {
+void relaxDistances(struct HeapItem* vertex, struct Graph graph, int distanceFromSource[V], struct MinHeap* minheap, int paths[V]) {
     struct Vertex* adjacentVertex = graph.adjacencyList[vertex->label1];
     while (adjacentVertex != NULL)
     {   
@@ -408,15 +417,17 @@ void relaxDistances(struct HeapItem* vertex, struct Graph graph, int distanceFro
             struct HeapItem* newHeapItem = (struct HeapItem*)malloc(sizeof(struct HeapItem));
             newHeapItem->label1 = currentVertex;
             newHeapItem->value = newDistance;
+            paths[currentVertex] = vertex->label1;
             insertItemToMinHeap(minheap, newHeapItem);
         }
         adjacentVertex = adjacentVertex->next;
     }
 }
 
-void printSSSP(int distanceFromSource[V], int source) {
+void printSSSP(int distanceFromSource[V], int source, int paths[V]) {
     printf("Following shortest paths are computed by Dijkstra's method\n");
     for (int i = 0; i < V; i++) {
         printf("Shortest path distance from vertex %d to %d is %d\n", source + 1, i + 1, distanceFromSource[i]);
+        printf("and the last vertex on the path is %d\n", paths[i] + 1);
     }
 }
