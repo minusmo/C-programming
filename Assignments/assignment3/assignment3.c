@@ -51,17 +51,17 @@ int main() {
         {2,0,0,0,0,1,0,0,3,0,0,0,0,0,0,0},
         {0,5,0,0,1,0,5,0,0,4,0,0,0,0,0,0},
         {0,0,1,0,0,5,0,8,0,0,2,0,0,0,0,0},
-        {0,0,0,6,0,0,0,6,0,0,0,6,0,0,0,0},
+        {0,0,0,6,0,0,8,0,0,0,0,6,0,0,0,0},
         {0,0,0,0,3,0,0,0,0,2,0,0,2,0,0,0},
         {0,0,0,0,0,4,0,0,2,0,4,0,0,6,0,0},
-        {0,0,0,0,0,0,2,0,0,4,0,6,0,0,0,0},
+        {0,0,0,0,0,0,2,0,0,4,0,6,0,0,4,0},
         {0,0,0,0,0,0,0,6,0,0,6,0,0,0,0,4},
         {0,0,0,0,0,0,0,0,2,0,0,0,0,3,0,0},
         {0,0,0,0,0,0,0,0,0,6,0,0,3,0,5,0},
         {0,0,0,0,0,0,0,0,0,0,4,0,0,5,0,7},
         {0,0,0,0,0,0,0,0,0,0,0,4,0,0,7,0},
     };
-    createAdjacencyListfromMatrix(undirectedGraph, adjacencyMatrix);
+    createAdjacencyListfromMatrix(&undirectedGraph, adjacencyMatrix);
     test(adjacencyMatrix);
     clearAdjacencyList();
     return 0;
@@ -85,15 +85,16 @@ void printLinkedList(struct Vertex* vertex) {
     while (temp != NULL)
     {
         printf("%d and it costs %d ", temp->index, temp->cost);
+        temp = temp->next;
     }
 }
 
 void testKruskalMethod(int adjacencyMatrix[V][V]) {
-    findMSTUsingKruskalMethod(undirectedGraph, priorityQueue, adjacencyMatrix);
+    findMSTUsingKruskalMethod(undirectedGraph, &priorityQueue, adjacencyMatrix);
 }
 
 void testDijkstraMethod(int source) {
-    findSSSPUsingDijkstraMethod(undirectedGraph, priorityQueue, source);
+    findSSSPUsingDijkstraMethod(undirectedGraph, &priorityQueue, source);
 }
 
 void clearAdjacencyList() {
@@ -102,13 +103,13 @@ void clearAdjacencyList() {
     }
 }
 
-void createAdjacencyListfromMatrix(struct Graph undirectedGraph, int adjacencyMatrix[V][V]) {
+void createAdjacencyListfromMatrix(struct Graph* undirectedGraph, int adjacencyMatrix[V][V]) {
     for (int i = 0; i < V; i++) {
         for (int j = 0; j < V; j++) {
             if (adjacencyMatrix[i][j] != 0) {
-                undirectedGraph.vertices += 1;
+                undirectedGraph->vertices += 1;
                 struct Vertex* newVertex = createVertex(j, adjacencyMatrix[i][j]);
-                addVertexToList(undirectedGraph.adjacencyList, i, newVertex);
+                addVertexToList(undirectedGraph->adjacencyList, i, newVertex);
             }
         }
     }
@@ -149,13 +150,13 @@ void clearLinkedList(struct Vertex* linkedVertex) {
     }
 }
 
-void insertItemToMinHeap(struct MinHeap minheap, struct HeapItem* value) {
+void insertItemToMinHeap(struct MinHeap* minheap, struct HeapItem* newHeapItem) {
     int isHeapified;
-    int index = minheap.heapSize + 1;
-    priorityQueue.heapSize += 1;
-    minheap.heap[index] = value;
-    for (; index > 0; index = index/2) {
-        isHeapified = minHeapify(index, priorityQueue.heap);
+    int index = minheap->heapSize + 1;
+    minheap->heapSize += 1;
+    minheap->heap[index] = newHeapItem;
+    for (; index > 1; index = index/2) {
+        isHeapified = minHeapify(index, minheap->heap);
         if (!isHeapified) {
             break;
         }
@@ -176,76 +177,82 @@ int minHeapify(int index, struct HeapItem* heap[MaxEdges]) {
     else {
         return 0;
     }
-    
 }
 
-struct HeapItem* popHeapItem(struct MinHeap minheap) {
-    int rootIndex, rightChildIndex, leftChildIndex;
+struct HeapItem* popHeapItem(struct MinHeap* minheap) {
+    int rootIndex, rightChildIndex, leftChildIndex, lastItemIndex;
     struct HeapItem *minItem, *lastItem;
-    if (minheap.heapSize == 0) {
+    if (minheap->heapSize == 0) {
         return NULL;
     }
     rootIndex = 1;
-    minItem = minheap.heap[rootIndex];
-    if (minheap.heapSize == 1) {
-        minheap.heapSize -= 1;
-        minheap.heap[rootIndex] = NULL;
+    minItem = minheap->heap[rootIndex];
+    lastItemIndex = minheap->heapSize;
+    if (minheap->heapSize == 1) {
+        minheap->heapSize -= 1;
+        minheap->heap[rootIndex] = NULL;
         return minItem;
     }
-    minheap.heapSize -= 1;
-    lastItem = minheap.heap[minheap.heapSize];
-    minheap.heap[rootIndex] = lastItem;
-    minheap.heap[minheap.heapSize] = NULL;
+    lastItem = minheap->heap[lastItemIndex];
+    minheap->heap[rootIndex] = lastItem;
+    minheap->heap[lastItemIndex] = NULL;
+    minheap->heapSize -= 1;
 
-    for (; rootIndex < minheap.heapSize; ) {
+    for (; rootIndex < minheap->heapSize; ) {
         leftChildIndex = rootIndex * 2;
         rightChildIndex = rootIndex * 2 + 1;
-        if (minheap.heap[rightChildIndex] == NULL && minheap.heap[rootIndex]->value > minheap.heap[leftChildIndex]->value) {
-           struct HeapItem* temp = minheap.heap[rootIndex];
-            minheap.heap[rootIndex] = minheap.heap[leftChildIndex];
-            minheap.heap[leftChildIndex] = temp;
-            break;
-        }
-        else {
+        if (minheap->heap[rightChildIndex] != NULL) {
             int minItemIndex;
-            if (minheap.heap[leftChildIndex]->value < minheap.heap[rightChildIndex]->value) {
+            if (minheap->heap[leftChildIndex]->value < minheap->heap[rightChildIndex]->value) {
                 minItemIndex = leftChildIndex;
             }
             else {
                 minItemIndex = rightChildIndex;
             }
-            if (minheap.heap[rootIndex]->value > minheap.heap[minItemIndex]->value) {
-                struct HeapItem* temp = minheap.heap[rootIndex];
-                minheap.heap[rootIndex] = minheap.heap[minItemIndex];
-                minheap.heap[minItemIndex] = temp;
+            if (minheap->heap[rootIndex]->value > minheap->heap[minItemIndex]->value) {
+                struct HeapItem* temp = minheap->heap[rootIndex];
+                minheap->heap[rootIndex] = minheap->heap[minItemIndex];
+                minheap->heap[minItemIndex] = temp;
                 rootIndex = minItemIndex;
             }
             else {
                 break;
             }
         }
-
+        else if (minheap->heap[leftChildIndex] != NULL) {
+            if (minheap->heap[rootIndex]->value > minheap->heap[leftChildIndex]->value) {
+                struct HeapItem* temp = minheap->heap[rootIndex];
+                minheap->heap[rootIndex] = minheap->heap[leftChildIndex];
+                minheap->heap[leftChildIndex] = temp;
+                rootIndex = leftChildIndex;
+            }
+            else {
+                break;
+            }
+        }
+        else {
+            break;
+        }   
     }
-    
     return minItem;
 }
 
-void findMSTUsingKruskalMethod(struct Graph graph, struct MinHeap minheap, int adjacencyMatrix[V][V]) {
+void findMSTUsingKruskalMethod(struct Graph graph, struct MinHeap* minheap, int adjacencyMatrix[V][V]) {
     int mstEdgeSet[V][V];
-    int mstNodes = 0;
+    int mstEdges = 0;
     struct VertexNode* disjointSet[V];
     createMSTSet(mstEdgeSet);
     initializeMinHeap(minheap);
     createDisjointSets(disjointSet);
     sortEdgeSetAscending(adjacencyMatrix);
-    while (!isMST(mstNodes)) {
+    while (!isMST(mstEdges)) {
         struct Edge* minEdge = takeMinimumCostEdge();
         if (isCycle(disjointSet, minEdge)) {
             continue;
         }
         else {
             mergeTwoTrees(disjointSet, minEdge);
-            addToMSTSet(&mstNodes, mstEdgeSet, minEdge);
+            addToMSTSet(&mstEdges, mstEdgeSet, minEdge);
         }
     }
     printMST(mstEdgeSet);
@@ -260,7 +267,7 @@ void createMSTSet(int mstEdgeSet[V][V]) {
 }
 
 void createDisjointSets(struct VertexNode* disjointSets[V]) {
-    for (int i = 0; i < V+1; i++) {
+    for (int i = 0; i < V; i++) {
         struct VertexNode* disjointSet = (struct VertexNode*)malloc(sizeof(struct VertexNode));
         disjointSet->index = i;
         disjointSet->parent = NULL;
@@ -269,21 +276,24 @@ void createDisjointSets(struct VertexNode* disjointSets[V]) {
 }
 
 void sortEdgeSetAscending(int adjacencyMatrix[V][V]) {
+    int temp[V][V];
     for (int i = 0; i < V; i++) {
         for (int j = 0; j < V; j++) {
-            if (adjacencyMatrix[i][j] != 0) {
+            if (adjacencyMatrix[i][j] != 0 && (temp[i][j] != -1 || temp[j][i] != -1)) {
                 struct HeapItem* heapitem = (struct HeapItem*)malloc(sizeof(struct HeapItem));
                 heapitem->label1 = i;
                 heapitem->label2 = j;
                 heapitem->value = adjacencyMatrix[i][j];
-                insertItemToMinHeap(priorityQueue, heapitem);
+                insertItemToMinHeap(&priorityQueue, heapitem);
+                temp[i][j] = -1;
+                temp[j][i] = -1;
             }
         }
     }
 }
 
-int isMST(int mstNodes) {
-    if (mstNodes == V) {
+int isMST(int mstEdges) {
+    if (mstEdges == V-1) {
         return 1;
     }
     else {
@@ -292,7 +302,7 @@ int isMST(int mstNodes) {
 }
 
 struct Edge* takeMinimumCostEdge() {
-    struct HeapItem* minHeapItem = popHeapItem(priorityQueue);
+    struct HeapItem* minHeapItem = popHeapItem(&priorityQueue);
     struct Edge* newEdge = (struct Edge*)malloc(sizeof(struct Edge));
     newEdge->source = minHeapItem->label1;
     newEdge->destination = minHeapItem->label2;
@@ -329,20 +339,21 @@ void mergeTwoTrees(struct VertexNode* disjointSet[V], struct Edge* minEdge) {
     source = minEdge->source;
     destination = minEdge->destination;
     if (source < destination) {
-        disjointSet[destination]->parent = source;
+        disjointSet[destination]->parent = disjointSet[source];
     }
     else {
-        disjointSet[source]->parent = destination;
+        disjointSet[source]->parent = disjointSet[destination];
     }
 }
 
-void addToMSTSet(int* mstNodes, int mstEdgeSet[V][V], struct Edge* minEdge) {
+void addToMSTSet(int* mstEdges, int mstEdgeSet[V][V], struct Edge* minEdge) {
     int source, destination;
     source = minEdge->source;
     destination = minEdge->destination;
+    
     mstEdgeSet[source][destination] = minEdge->cost;
     mstEdgeSet[destination][source] = minEdge->cost;
-    (*mstNodes)++;
+    (*mstEdges)++;
 }
 
 void printMST(int mstEdgeSet[V][V]) {
@@ -355,7 +366,7 @@ void printMST(int mstEdgeSet[V][V]) {
     }
 }
 
-void findSSSPUsingDijkstraMethod(struct Graph graph, struct MinHeap minheap, int source) {
+void findSSSPUsingDijkstraMethod(struct Graph graph, struct MinHeap* minheap, int source) {
     int distanceFromSource[V];
     struct HeapItem* sourceItem;
     initializeMinHeap(minheap);
@@ -364,16 +375,16 @@ void findSSSPUsingDijkstraMethod(struct Graph graph, struct MinHeap minheap, int
     sourceItem->label1 = 0;
     sourceItem->value = 0;
     insertItemToMinHeap(minheap, sourceItem);
-    while (minheap.heapSize != 0)
+    while (minheap->heapSize != 0)
     {
-        struct HeapItem* closestVertex = popHeapItem(priorityQueue);
+        struct HeapItem* closestVertex = popHeapItem(&priorityQueue);
         relaxDistances(closestVertex, graph, distanceFromSource, minheap);
     }
     printSSSP(distanceFromSource, source);
 }
 
-void initializeMinHeap(struct MinHeap minheap) {
-    while (minheap.heapSize != 0)
+void initializeMinHeap(struct MinHeap* minheap) {
+    while (minheap->heapSize != 0)
     {
         popHeapItem(minheap);
     }
@@ -386,7 +397,7 @@ void initializeDistances(int distanceFromSource[V], int source) {
     distanceFromSource[source] = 0;
 }
 
-void relaxDistances(struct HeapItem* vertex, struct Graph graph, int distanceFromSource[V], struct MinHeap minheap) {
+void relaxDistances(struct HeapItem* vertex, struct Graph graph, int distanceFromSource[V], struct MinHeap* minheap) {
     struct Vertex* adjacentVertex = graph.adjacencyList[vertex->label1];
     while (adjacentVertex != NULL)
     {   

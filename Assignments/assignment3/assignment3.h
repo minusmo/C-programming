@@ -13,18 +13,18 @@ void testDijkstraMethod(int source);
 void printLinkedList(struct Vertex* vertex);
 void clearAdjacencyList();
 
-void createAdjacencyListfromMatrix(struct Graph undirectedGraph, int adjacencyMatrix[V][V]);
+void createAdjacencyListfromMatrix(struct Graph* undirectedGraph, int adjacencyMatrix[V][V]);
 struct Vertex* createVertex(const int index, const int cost);
 void addVertexToList(struct Vertex* adjacencyList[V], const int index, struct Vertex* newVertex);
 struct Vertex* getLastLinkedVertex(struct Vertex* linkedVertex);
 void clearLinkedList(struct Vertex* linkedVertex);
 
-void insertItemToMinHeap(struct MinHeap minheap, struct HeapItem* item);
+void insertItemToMinHeap(struct MinHeap* minheap, struct HeapItem* item);
 int minHeapify(int index, struct HeapItem* heap[121]);
-struct HeapItem* popHeapItem(struct MinHeap minheap);
-void initializeMinHeap(struct MinHeap minheap);
+struct HeapItem* popHeapItem(struct MinHeap* minheap);
+void initializeMinHeap(struct MinHeap* minheap);
 
-void findMSTUsingKruskalMethod(struct Graph graph, struct MinHeap minheap, int adjacencyMatrix[V][V]);
+void findMSTUsingKruskalMethod(struct Graph graph, struct MinHeap* minheap, int adjacencyMatrix[V][V]);
 void createMSTSet(int mstEdgeSet[V][V]);
 void createDisjointSets(struct VertexNode* disjointSets[V]);
 void sortEdgeSetAscending(int adjacencyMatrix[V][V]);
@@ -36,7 +36,7 @@ void mergeTwoTrees(struct VertexNode* disjointSet[V], struct Edge* minEdge);
 void addToMSTSet(int* mstNodes, int mstEdgeSet[V][V], struct Edge* minEdge);
 void printMST(int mstEdgeSet[V][V]);
 
-void findSSSPUsingDijkstraMethod(struct Graph graph, struct MinHeap minheap, int source);
+void findSSSPUsingDijkstraMethod(struct Graph graph, struct MinHeap* minheap, int source);
 void initializeDistances(int distanceFromSource[V], int source);
-void relaxDistances(struct HeapItem* vertex, struct Graph graph, int distanceFromSource[V], struct MinHeap minheap);
+void relaxDistances(struct HeapItem* vertex, struct Graph graph, int distanceFromSource[V], struct MinHeap* minheap);
 void printSSSP(int distanceFromSource[V], int source);
